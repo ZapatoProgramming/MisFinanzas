@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
             MisFinanzasTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Modification",
+                        name = "Request de prueba",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
