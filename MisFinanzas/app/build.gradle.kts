@@ -43,7 +43,7 @@ android {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.compose.material:material-icons-core:1.5.4") // Íconos principales
     implementation("androidx.compose.material:material-icons-extended:1.5.4") // Íconos extendidos
     implementation(libs.androidx.core.ktx)
