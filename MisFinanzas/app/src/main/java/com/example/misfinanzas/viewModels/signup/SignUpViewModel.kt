@@ -1,10 +1,12 @@
 package com.example.misfinanzas.viewModels.signup
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.misfinanzas.auth.FirebaseAuthService
 import com.example.misfinanzas.models.SignUpModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class SignUpViewModel: ViewModel() {
 
@@ -50,6 +52,31 @@ class SignUpViewModel: ViewModel() {
 
     fun updateName(name: String){
         _signupForm.value = _signupForm.value.copy(name = name)
+    }
+
+    fun updateLastName(lastName: String){
+        _signupForm.value = _signupForm.value.copy(lastName = lastName)
+    }
+
+    fun signup(){
+        viewModelScope.launch {
+            val email = _signupForm.value.email
+            val password = _signupForm.value.password
+
+            // Validaciones básicas
+            if (email.isEmpty() || password.isEmpty()) {
+                _signupMessage.value = "Por favor, complete todos los campos."
+                return@launch
+            }
+
+            val (success, errorMessage) = authService.createUserWithEmailAndPassword(email, password)
+            if (success) {
+                _signupMessage.value = "Creacion de cuenta exitosa."
+            } else {
+                _signupMessage.value = errorMessage ?: "Error en la creación de cuenta."
+            }
+
+        }
     }
 
 }

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +54,8 @@ fun SignUpView(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(top = 16.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
@@ -73,6 +75,8 @@ fun SignUpView(
             contentDescription = "logo", // Descripción para accesibilidad
             modifier = Modifier.size(150.dp) // Tamaño de la imagen
         )
+
+        Spacer(modifier = Modifier.height(32.dp))
 
         // Campo de correo electrónico
         TextField(
@@ -124,5 +128,37 @@ fun SignUpView(
             },
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = signupForm.name,
+            onValueChange = { viewModel.updateName(it) },
+            label = { Text("Nombre") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = signupForm.lastName,
+            onValueChange = { viewModel.updateLastName(it) },
+            label = { Text("Apellido") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick = { viewModel.signup() },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            )
+        ) {
+            Text("Crear Cuenta")
+        }
     }
 }

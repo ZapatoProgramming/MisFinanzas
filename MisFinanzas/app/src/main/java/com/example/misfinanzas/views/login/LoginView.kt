@@ -114,7 +114,7 @@ fun LoginView(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = loginMessage!!,
-                color = if (loginMessage == "Inicio de sesión exitoso.") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                color = if (loginMessage == "Inicio de sesión exitoso.") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
             )
         }
     }
