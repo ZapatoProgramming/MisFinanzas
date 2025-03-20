@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.TextField
 
 
 @Composable
@@ -43,7 +44,7 @@ fun AddView(){
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        TextField(
             value = cantidad,
             onValueChange = { cantidad = it },
             label = { Text("Cantidad") },
@@ -51,7 +52,7 @@ fun AddView(){
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
+       TextField(
             value = categoria,
             onValueChange = { categoria = it },
             label = { Text("Categoría") },
@@ -60,21 +61,21 @@ fun AddView(){
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            OutlinedTextField(
+            TextField(
                 value = dia,
                 onValueChange = { dia = it },
                 label = { Text("Día") },
                 modifier = Modifier.weight(1f)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            OutlinedTextField(
+            TextField(
                 value = mes,
                 onValueChange = { mes = it },
                 label = { Text("Mes") },
                 modifier = Modifier.weight(1f)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            OutlinedTextField(
+            TextField(
                 value = anio,
                 onValueChange = { anio = it },
                 label = { Text("Año") },
