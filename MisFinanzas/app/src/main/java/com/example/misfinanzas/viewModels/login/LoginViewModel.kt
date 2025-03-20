@@ -2,12 +2,15 @@ package com.example.misfinanzas.viewModels.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.misfinanzas.auth.FirebaseAuthService
 import com.example.misfinanzas.models.LoginModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
+
+    private val authService = FirebaseAuthService()
 
     // Estado del formulario de inicio de sesión
     private val _loginForm = MutableStateFlow(LoginModel())
@@ -48,12 +51,13 @@ class LoginViewModel : ViewModel() {
                 return@launch
             }
 
-            // Simulación de autenticación exitosa
-            if (email == "usuario@example.com" && password == "xd") {
+            val (success, errorMessage) = authService.signInWithEmailAndPassword(email, password)
+            if (success) {
                 _loginMessage.value = "Inicio de sesión exitoso."
             } else {
-                _loginMessage.value = "Correo electrónico o contraseña incorrectos."
+                _loginMessage.value = errorMessage ?: "Error en el inicio de sesión."
             }
+
         }
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.misfinanzas.navigation.NavGraph
 import com.example.misfinanzas.views.login.LoginView
 import com.example.misfinanzas.ui.theme.MisFinanzasTheme
 
@@ -19,14 +20,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginView(
-                        onLoginSuccess = {
-                            // Navegar a la pantalla principal después del inicio de sesión
-                        },
-                        onNavigateToSignUp = {
-                            // Navegar a la pantalla de registro
-                        }
-                    )
+                    NavGraph()
                 }
             }
         }
