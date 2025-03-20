@@ -98,7 +98,7 @@ fun HomeView() {
 
         // Hay que poner la barra de navegación inferior en una clase aparte para no estar creandola cada vez que se crea una vista
 
-        // Barra de navegación inferior
+
 
     }
 }
