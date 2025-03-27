@@ -15,12 +15,14 @@ import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -46,6 +48,17 @@ fun SignUpView(
     val isPasswordVisible by viewModel.isPasswordVisible.collectAsState()
 
     val isPasswordVisibleTwo by viewModel.isPasswordVisibleTwo.collectAsState()
+
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    val signUpSuccess by viewModel.signUpSuccess.collectAsState()
+
+    LaunchedEffect(signUpSuccess) {
+        if (signUpSuccess) {
+            onSignUpSuccess() // Navega cuando el inicio de sesión es exitoso
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -158,7 +171,22 @@ fun SignUpView(
                 containerColor = MaterialTheme.colorScheme.secondary
             )
         ) {
-            Text("Crear Cuenta")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+            } else {
+                Text("Crear Cuenta")
+            }
+        }
+
+        if (!signupMessage.isNullOrEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = signupMessage!!,
+                color = if (signupMessage == "Creacion de cuenta exitosa.") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
+            )
         }
     }
 }
