@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.misfinanzas.home.HomeView.HomeView
 import com.example.misfinanzas.views.login.LoginView
 import com.example.misfinanzas.views.signup.SignUpView
 
@@ -16,6 +17,7 @@ fun NavGraph() {
             LoginView(
                 onLoginSuccess = {
                     // Navegar a la pantalla principal después del inicio de sesión
+                    navController.navigate(AppScreens.NavigationHome.route)
                 },
                 onNavigateToSignUp = {
                     // Navegar a la pantalla de registro
@@ -27,12 +29,16 @@ fun NavGraph() {
             SignUpView(
                 onSignUpSuccess = {
                     // Navegar a la pantalla principal después del registro
+                    navController.navigate(AppScreens.Login.route)
                 },
                 onNavigateToLogin = {
                     // Volver a la pantalla de inicio de sesión
                     navController.popBackStack()
                 }
             )
+        }
+        composable(AppScreens.NavigationHome.route){
+            HomeView()
         }
     }
 }

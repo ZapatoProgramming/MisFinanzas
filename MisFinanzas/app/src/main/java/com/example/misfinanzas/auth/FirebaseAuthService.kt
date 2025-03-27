@@ -1,7 +1,6 @@
 package com.example.misfinanzas.auth
 
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.ktx.auth
@@ -16,8 +15,6 @@ class FirebaseAuthService {
         return try {
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
             Pair(true, null)
-            true
-            Pair(false, "El usuario no existe o está deshabilitado.")
         } catch (e: Exception) {
             Pair(false, "Error desconocido: ${e.message}")
         }

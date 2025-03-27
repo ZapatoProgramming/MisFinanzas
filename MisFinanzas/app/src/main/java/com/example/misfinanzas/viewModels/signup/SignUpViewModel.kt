@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.misfinanzas.auth.FirebaseAuthService
 import com.example.misfinanzas.models.SignUpModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -26,6 +27,12 @@ class SignUpViewModel: ViewModel() {
 
     private val _isPasswordVisibleTwo = MutableStateFlow(false)
     val isPasswordVisibleTwo: StateFlow<Boolean> = _isPasswordVisibleTwo
+
+    private val _signUpSuccess = MutableStateFlow(false)
+    val signUpSuccess: StateFlow<Boolean> = _signUpSuccess
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     // Actualizar el correo electrónico
     fun updateEmail(email: String) {
@@ -59,6 +66,7 @@ class SignUpViewModel: ViewModel() {
     }
 
     fun signup(){
+        _isLoading.value = true
         viewModelScope.launch {
             val email = _signupForm.value.email
             val password = _signupForm.value.password
@@ -69,13 +77,16 @@ class SignUpViewModel: ViewModel() {
                 return@launch
             }
 
-            val (success, errorMessage) = authService.createUserWithEmailAndPassword(email, password)
+            val deferredResult = async { authService.createUserWithEmailAndPassword(email, password) }
+            val (success, errorMessage) = deferredResult.await()
             if (success) {
                 _signupMessage.value = "Creacion de cuenta exitosa."
+                _signUpSuccess.value = true
             } else {
                 _signupMessage.value = errorMessage ?: "Error en la creación de cuenta."
+                _signUpSuccess.value = false
             }
-
+            _isLoading.value = false
         }
     }
 
