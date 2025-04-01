@@ -59,6 +59,11 @@ fun HomeView() {
         Spacer(modifier = Modifier.height(8.dp))
 
         // Resumen de ingresos, gastos y saldo
+        //--------------------------------------------------------------------------------------------------------------
+        /* Falta hacer que el apartado de ingresos, gasto y saldo se actualize con la base de datos en tiempo real ahora
+        ahora solo es un ejemplo visual */
+        //--------------------------------------------------------------------------------------------------------------
+
         Row(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
