@@ -13,14 +13,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun HomeView() {
-    var selectedMonth by remember { mutableStateOf("Enero") }
-    val months = listOf("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
-    var currentIndex by remember { mutableStateOf(0) }
+    // Obtener el mes actual (0 = Enero, 11 = Diciembre)
+    val currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH)
+    val months = listOf(
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    )
+    var currentIndex by remember { mutableStateOf(currentMonth) }
+    var selectedMonth by remember { mutableStateOf(months[currentIndex]) }
 
     Column(
         modifier = Modifier
@@ -61,16 +67,16 @@ fun HomeView() {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Ingreso",  fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("Ingreso", fontWeight = FontWeight.Bold, color = Color.Black)
                 Text("0", fontWeight = FontWeight.Bold, color = Color.Black)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Gastos",  fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("Gastos", fontWeight = FontWeight.Bold, color = Color.Black)
                 Text("0", fontWeight = FontWeight.Bold, color = Color.Black)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Saldo", fontWeight = FontWeight.Bold, color = Color.Black)
-                Text("0",  fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("0", fontWeight = FontWeight.Bold, color = Color.Black)
             }
         }
 
@@ -89,16 +95,21 @@ fun HomeView() {
             Text("+", fontSize = 100.sp, fontWeight = FontWeight.Bold, color = Color.Black)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // Texto de indicación
-        Text("Crea tu primer historial de ingresos y de gastos", color = Color.White, fontSize = 30.sp)
-
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "Crea tu primer historial de ingresos y de gastos",
+                color = Color.White,
+                fontSize = 30.sp,
+                textAlign = TextAlign.Center
+            )
+        }
         Spacer(modifier = Modifier.weight(1f))
-
-        // Hay que poner la barra de navegación inferior en una clase aparte para no estar creandola cada vez que se crea una vista
-
-
-
     }
 }
