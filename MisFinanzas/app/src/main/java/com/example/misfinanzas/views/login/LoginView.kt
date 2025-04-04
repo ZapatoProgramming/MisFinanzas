@@ -29,6 +29,17 @@ fun LoginView(
     // Estado de visibilidad de la contraseña
     val isPasswordVisible by viewModel.isPasswordVisible.collectAsState()
 
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    val loginSuccess by viewModel.loginSuccess.collectAsState()
+
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            onLoginSuccess() // Navega cuando el inicio de sesión es exitoso
+        }
+    }
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -46,7 +57,7 @@ fun LoginView(
         )
 
         // Campo de correo electrónico
-        OutlinedTextField(
+        TextField(
             value = loginForm.email,
             onValueChange = { viewModel.updateEmail(it) },
             label = { Text("Correo Electrónico") },
@@ -57,7 +68,7 @@ fun LoginView(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Campo de contraseña
-        OutlinedTextField(
+        TextField(
             value = loginForm.password,
             onValueChange = { viewModel.updatePassword(it) },
             label = { Text("Contraseña") },
@@ -77,29 +88,40 @@ fun LoginView(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón de inicio de sesión
         Button(
             onClick = { viewModel.login() },
             modifier = Modifier.fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp,
-                    top = 8.dp, bottom = 8.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary
-            )
+            ),
+            enabled = !isLoading // Deshabilitar el botón mientras se carga
         ) {
-            Text("Iniciar Sesión")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+            } else {
+                Text("Iniciar Sesión")
+            }
         }
 
         // Enlace para recuperar contraseña
         TextButton(onClick = { /* Navegar a la pantalla de recuperación de contraseña */ }) {
-            Text("¿Olvidó su contraseña?")
+            Text(text = "¿Olvidó su contraseña?",
+                color = MaterialTheme.colorScheme.tertiary )
+
         }
 
         Spacer(modifier = Modifier.height(36.dp))
 
         Button(
             onClick = onNavigateToSignUp,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.tertiary
+            )
         ) {
             Text("Crear Cuenta")
         }
@@ -109,7 +131,7 @@ fun LoginView(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = loginMessage!!,
-                color = if (loginMessage == "Inicio de sesión exitoso.") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                color = if (loginMessage == "Inicio de sesión exitoso.") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
             )
         }
     }

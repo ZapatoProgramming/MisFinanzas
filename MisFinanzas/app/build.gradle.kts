@@ -41,6 +41,9 @@ android {
 }
 
 dependencies {
+    implementation("com.google.gms:google-services:4.3.15")  // Para Firebase
+    implementation("com.google.android.gms:play-services-tasks:18.0.2")  // Para Task API
+    implementation("androidx.navigation:navigation-compose:2.7.3")
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
@@ -54,6 +57,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.androidx.media3.common.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,121 +1,206 @@
 package com.example.misfinanzas.home.HomeView
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.misfinanzas.views.add.AddView
+import com.example.misfinanzas.views.dashboard.DashboardView
+
+sealed class HomeScreens(val route: String, val title: String, val icon: ImageVector? = null) {
+    object Dashboard : HomeScreens("dashboard", "Dashboard", Icons.Default.BarChart)
+    object Tips : HomeScreens("tips", "Tips", Icons.Default.Lightbulb)
+    object Suscriptions : HomeScreens("sucriptions", "Suscriptions", Icons.Default.Notifications)
+    object Profile : HomeScreens("profile", "Profile", Icons.Default.Person)
+    object Add : HomeScreens("add", "Add")
+}
 
 @Composable
 fun HomeView() {
-    // Obtener el mes actual (0 = Enero, 11 = Diciembre)
-    val currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH)
-    val months = listOf(
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    )
-    var currentIndex by remember { mutableStateOf(currentMonth) }
-    var selectedMonth by remember { mutableStateOf(months[currentIndex]) }
+    val navController = rememberNavController()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Selector de mes
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = {
-                if (currentIndex > 0) {
-                    currentIndex--
-                    selectedMonth = months[currentIndex]
-                }
-            }) {
-                Text("◀", color = Color.White, fontSize = 20.sp)
-            }
-            Text(selectedMonth, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            IconButton(onClick = {
-                if (currentIndex < months.size - 1) {
-                    currentIndex++
-                    selectedMonth = months[currentIndex]
-                }
-            }) {
-                Text("▶", color = Color.White, fontSize = 20.sp)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Resumen de ingresos, gastos y saldo
-        //--------------------------------------------------------------------------------------------------------------
-        /* Falta hacer que el apartado de ingresos, gasto y saldo se actualize con la base de datos en tiempo real ahora
-        ahora solo es un ejemplo visual */
-        //--------------------------------------------------------------------------------------------------------------
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .background(Color(0xFFEFEBD1), shape = MaterialTheme.shapes.medium)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Ingreso", fontWeight = FontWeight.Bold, color = Color.Black)
-                Text("0", fontWeight = FontWeight.Bold, color = Color.Black)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Gastos", fontWeight = FontWeight.Bold, color = Color.Black)
-                Text("0", fontWeight = FontWeight.Bold, color = Color.Black)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Saldo", fontWeight = FontWeight.Bold, color = Color.Black)
-                Text("0", fontWeight = FontWeight.Bold, color = Color.Black)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Botón central grande
+    Scaffold(
+        bottomBar = { CustomBottomNavigationBar(navController = navController) }
+    ) { innerPadding ->
+        // Aplicamos el innerPadding al contenido principal
         Box(
             modifier = Modifier
-                .size(150.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFEFEBD1))
-                .clickable { }
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .padding(innerPadding) // Usamos el innerPadding aquí
         ) {
-            Text("+", fontSize = 100.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "Crea tu primer historial de ingresos y de gastos",
-                color = Color.White,
-                fontSize = 30.sp,
-                textAlign = TextAlign.Center
+            HomeNavGraph(
+                navController = navController,
+                modifier = Modifier.fillMaxSize()
             )
         }
-        Spacer(modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun CustomBottomNavigationBar(navController: NavHostController) {
+    val screens = listOf(
+        HomeScreens.Dashboard,
+        HomeScreens.Tips,
+        HomeScreens.Add,
+        HomeScreens.Suscriptions,
+        HomeScreens.Profile
+    )
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .padding(bottom = 16.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.Bottom
+    ) {
+        // Primeros dos ítems (izquierda)
+        screens.take(2).forEach { screen ->
+            NavigationBarItem(screen, currentRoute, navController)
+        }
+        val addSelected = currentRoute == screens[2].route
+        // Botón central destacado
+        val iconSize = 54.dp
+        Box(
+            modifier = Modifier
+                .size(iconSize) // Tamaño mayor para el botón central
+                .clickable {
+                    navController.navigate(HomeScreens.Add.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.AddCircle, // Ícono de Material Icons
+                contentDescription = "Add",
+                tint = if (addSelected) {
+                    MaterialTheme.colorScheme.secondary
+                } else {
+                    MaterialTheme.colorScheme.onBackground
+                },
+                modifier = Modifier.size(iconSize) // Ícono más grande
+            )
+        }
+        // Últimos dos ítems (derecha)
+        screens.takeLast(2).forEach { screen ->
+            NavigationBarItem(screen, currentRoute, navController)
+        }
+    }
+}
+
+@Composable
+private fun NavigationBarItem(
+    screen: HomeScreens,
+    currentRoute: String?,
+    navController: NavHostController
+) {
+    val isSelected = currentRoute == screen.route
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable {
+                if (!isSelected) {
+                    navController.navigate(screen.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
+    ) {
+        Icon(
+            imageVector = screen.icon!!,
+            contentDescription = screen.title,
+            tint = if (isSelected) {
+                MaterialTheme.colorScheme.secondary
+            } else {
+                MaterialTheme.colorScheme.onBackground
+            },
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+fun TipsScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(text = "Tips Screen", color = MaterialTheme.colorScheme.onBackground)
+    }
+}
+
+@Composable
+fun ProfileScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(text = "Profile Screen", color = MaterialTheme.colorScheme.onBackground)
+    }
+}
+
+@Composable
+fun SuscriptionsScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(text = "Suscriptions Screen", color = MaterialTheme.colorScheme.onBackground)
     }
     // vamos
+}
+
+@Composable
+fun HomeNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+    NavHost(
+        navController = navController,
+        startDestination = HomeScreens.Dashboard.route,
+        modifier = modifier
+    ) {
+        composable(HomeScreens.Dashboard.route) {
+            DashboardView()
+        }
+        composable(HomeScreens.Tips.route) {
+            TipsScreen()
+        }
+        composable(HomeScreens.Profile.route) {
+            ProfileScreen()
+        }
+        composable(HomeScreens.Suscriptions.route) {
+            SuscriptionsScreen()
+        }
+        composable(HomeScreens.Add.route) {
+            AddView()
+        }
+    }
 }
