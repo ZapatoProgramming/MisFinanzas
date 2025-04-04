@@ -37,7 +37,7 @@ import com.example.misfinanzas.views.dashboard.DashboardView
 sealed class HomeScreens(val route: String, val title: String, val icon: ImageVector? = null) {
     object Dashboard : HomeScreens("dashboard", "Dashboard", Icons.Default.BarChart)
     object Tips : HomeScreens("tips", "Tips", Icons.Default.Lightbulb)
-    object Notifications : HomeScreens("notifications", "Notifications", Icons.Default.Notifications)
+    object Suscriptions : HomeScreens("sucriptions", "Suscriptions", Icons.Default.Notifications)
     object Profile : HomeScreens("profile", "Profile", Icons.Default.Person)
     object Add : HomeScreens("add", "Add")
 }
@@ -69,7 +69,7 @@ fun CustomBottomNavigationBar(navController: NavHostController) {
         HomeScreens.Dashboard,
         HomeScreens.Tips,
         HomeScreens.Add,
-        HomeScreens.Notifications,
+        HomeScreens.Suscriptions,
         HomeScreens.Profile
     )
 
@@ -174,9 +174,9 @@ fun ProfileScreen() {
 }
 
 @Composable
-fun NotificationsScreen() {
+fun SuscriptionsScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Notifications Screen", color = MaterialTheme.colorScheme.onBackground)
+        Text(text = "Suscriptions Screen", color = MaterialTheme.colorScheme.onBackground)
     }
 }
 
@@ -196,8 +196,8 @@ fun HomeNavGraph(navController: NavHostController, modifier: Modifier = Modifier
         composable(HomeScreens.Profile.route) {
             ProfileScreen()
         }
-        composable(HomeScreens.Notifications.route) {
-            NotificationsScreen()
+        composable(HomeScreens.Suscriptions.route) {
+            SuscriptionsScreen()
         }
         composable(HomeScreens.Add.route) {
             AddView()
