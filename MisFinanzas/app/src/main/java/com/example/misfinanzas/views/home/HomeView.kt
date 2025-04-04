@@ -116,7 +116,6 @@ fun CustomBottomNavigationBar(navController: NavHostController) {
                 modifier = Modifier.size(iconSize) // Ícono más grande
             )
         }
-
         // Últimos dos ítems (derecha)
         screens.takeLast(2).forEach { screen ->
             NavigationBarItem(screen, currentRoute, navController)
@@ -178,6 +177,7 @@ fun SuscriptionsScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(text = "Suscriptions Screen", color = MaterialTheme.colorScheme.onBackground)
     }
+    // vamos
 }
 
 @Composable
