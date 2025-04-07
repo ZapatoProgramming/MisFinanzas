@@ -13,26 +13,20 @@ import com.example.misfinanzas.views.signup.SignUpView
 import com.example.misfinanzas.views.splash.SplashView
 
 @Composable
-fun NavGraph() {
+fun NavGraph(firebaseAuthService: FirebaseAuthService) {
     val navController = rememberNavController()
-    val firebaseAuthService = FirebaseAuthService()
-    val isLoggedInState = firebaseAuthService.isLoggedIn.collectAsState()
-    val isLoggedIn = isLoggedInState.value
 
-    LaunchedEffect(isLoggedIn) {
-        when (isLoggedIn) {
-            true -> {
-                if (navController.currentDestination?.route != AppScreens.NavigationHome.route) {
-                    navController.navigate(AppScreens.NavigationHome.route)
-                }
+    val userState = firebaseAuthService.currentUser.collectAsState()
+    val user = userState.value
+
+    LaunchedEffect(user) {
+        if (user != null) {
+            navController.navigate(AppScreens.NavigationHome.route) {
+                popUpTo(AppScreens.Login.route) { inclusive = true }
             }
-            false -> {
-                if (navController.currentDestination?.route != AppScreens.Login.route) {
-                    navController.navigate(AppScreens.Login.route)
-                }
-            }
-            null -> {
-                navController.navigate(AppScreens.Splash.route)
+        } else {
+            navController.navigate(AppScreens.Login.route) {
+                popUpTo(AppScreens.NavigationHome.route) { inclusive = true }
             }
         }
     }

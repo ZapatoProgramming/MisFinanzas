@@ -1,25 +1,27 @@
 package com.example.misfinanzas.auth
 
+import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.tasks.await
 
-class FirebaseAuthService {
+class FirebaseAuthService: ViewModel() {
 
     private val auth: FirebaseAuth = Firebase.auth
 
-    private val _isLoggedIn = MutableStateFlow<Boolean?>(null)
-    val isLoggedIn: StateFlow<Boolean?> = _isLoggedIn.asStateFlow()
+    private val _currentUser = MutableStateFlow<FirebaseUser?>(auth.currentUser)
+    val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
 
     init {
         auth.addAuthStateListener { firebaseAuth ->
-            _isLoggedIn.value = firebaseAuth.currentUser != null
+            _currentUser.value = firebaseAuth.currentUser
         }
     }
 
@@ -45,4 +47,7 @@ class FirebaseAuthService {
         }
     }
 
+    fun signOut(){
+        auth.signOut()
+    }
 }
