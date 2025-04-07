@@ -90,7 +90,7 @@ fun DashboardView() {
             modifier = Modifier
                 .size(150.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFEFEBD1))
+                .background(MaterialTheme.colorScheme.secondary)
                 .clickable { }
                 .padding(16.dp),
             contentAlignment = Alignment.Center
@@ -109,7 +109,7 @@ fun DashboardView() {
             Text(
                 "Crea tu primer historial de ingresos y de gastos",
                 color = Color.White,
-                fontSize = 30.sp,
+                fontSize = 20.sp,
                 textAlign = TextAlign.Center
             )
         }
