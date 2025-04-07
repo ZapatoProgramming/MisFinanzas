@@ -25,7 +25,7 @@ fun DashboardView() {
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     )
-    var currentIndex by remember { mutableStateOf(currentMonth) }
+    var currentIndex by remember { mutableIntStateOf(currentMonth) }
     var selectedMonth by remember { mutableStateOf(months[currentIndex]) }
 
     Column(
