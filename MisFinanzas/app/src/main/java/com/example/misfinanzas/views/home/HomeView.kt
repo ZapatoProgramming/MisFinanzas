@@ -22,13 +22,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.misfinanzas.viewModels.dashboard.DashboardViewModel
 import com.example.misfinanzas.views.add.AddView
 import com.example.misfinanzas.views.dashboard.DashboardView
+import com.example.misfinanzas.views.dashboard.EnterBalanceView
 
 sealed class HomeScreens(val route: String, val title: String, val icon: ImageVector? = null) {
     object Dashboard : HomeScreens("dashboard", "Dashboard", Icons.Default.BarChart)
@@ -36,6 +39,8 @@ sealed class HomeScreens(val route: String, val title: String, val icon: ImageVe
     object Suscriptions : HomeScreens("sucriptions", "Suscriptions", Icons.Default.Notifications)
     object Profile : HomeScreens("profile", "Profile", Icons.Default.Person)
     object Add : HomeScreens("add", "Add")
+    object AddFirst : HomeScreens("addFirst", "Add")
+    object EnterBalance : HomeScreens("enterBalance", "Enter Balance")
 }
 
 @Composable
@@ -86,7 +91,7 @@ fun CustomBottomNavigationBar(navController: NavHostController) {
         val iconSize = 54.dp
         Box(
             modifier = Modifier
-                .size(iconSize) // Tamaño mayor para el botón central
+                .size(iconSize)
                 .clickable {
                     navController.navigate(HomeScreens.Add.route) {
                         popUpTo(navController.graph.startDestinationId) {
@@ -169,18 +174,18 @@ fun SuscriptionsScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(text = "Suscriptions Screen", color = MaterialTheme.colorScheme.onBackground)
     }
-    // vamos
 }
 
 @Composable
 fun HomeNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+    val viewModel: DashboardViewModel = viewModel()
     NavHost(
         navController = navController,
         startDestination = HomeScreens.Dashboard.route,
         modifier = modifier
     ) {
         composable(HomeScreens.Dashboard.route) {
-            DashboardView()
+            DashboardView(viewModel = viewModel, navController = navController)
         }
         composable(HomeScreens.Tips.route) {
             TipsScreen()
@@ -192,7 +197,13 @@ fun HomeNavGraph(navController: NavHostController, modifier: Modifier = Modifier
             SuscriptionsScreen()
         }
         composable(HomeScreens.Add.route) {
-            AddView()
+            AddView(firstTime = false, navController = navController)
+        }
+        composable(HomeScreens.AddFirst.route) {
+            AddView(firstTime = true, navController = navController, dashboardViewModel = viewModel)
+        }
+        composable(HomeScreens.EnterBalance.route) {
+            EnterBalanceView(viewModel = viewModel, navController = navController)
         }
     }
 }
