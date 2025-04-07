@@ -45,11 +45,10 @@ fun HomeView() {
     Scaffold(
         bottomBar = { CustomBottomNavigationBar(navController = navController) }
     ) { innerPadding ->
-        // Aplicamos el innerPadding al contenido principal
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding) // Usamos el innerPadding aquí
+                .padding(innerPadding)
         ) {
             HomeNavGraph(
                 navController = navController,
@@ -80,12 +79,10 @@ fun CustomBottomNavigationBar(navController: NavHostController) {
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.Bottom
     ) {
-        // Primeros dos ítems (izquierda)
         screens.take(2).forEach { screen ->
             NavigationBarItem(screen, currentRoute, navController)
         }
         val addSelected = currentRoute == screens[2].route
-        // Botón central destacado
         val iconSize = 54.dp
         Box(
             modifier = Modifier
@@ -102,17 +99,16 @@ fun CustomBottomNavigationBar(navController: NavHostController) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.AddCircle, // Ícono de Material Icons
+                imageVector = Icons.Default.AddCircle,
                 contentDescription = "Add",
                 tint = if (addSelected) {
                     MaterialTheme.colorScheme.secondary
                 } else {
                     MaterialTheme.colorScheme.onBackground
                 },
-                modifier = Modifier.size(iconSize) // Ícono más grande
+                modifier = Modifier.size(iconSize)
             )
         }
-        // Últimos dos ítems (derecha)
         screens.takeLast(2).forEach { screen ->
             NavigationBarItem(screen, currentRoute, navController)
         }

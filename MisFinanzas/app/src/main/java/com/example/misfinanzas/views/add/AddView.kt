@@ -116,7 +116,7 @@ fun AddView(){
                                 frecuenciaSubscripcion = opcion
                                 expanded = false
                             },
-                            text = { Text(opcion) } // Corrección del error
+                            text = { Text(opcion) }
                         )
                     }
                 }

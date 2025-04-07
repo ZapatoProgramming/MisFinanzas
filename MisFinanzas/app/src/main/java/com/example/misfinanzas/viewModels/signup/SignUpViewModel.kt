@@ -13,15 +13,12 @@ class SignUpViewModel: ViewModel() {
 
     private val authService = FirebaseAuthService()
 
-    // Estado del formulario de inicio de sesión
     private val _signupForm = MutableStateFlow(SignUpModel())
     val signupForm: StateFlow<SignUpModel> = _signupForm
 
-    // Estado para manejar mensajes de error o éxito
     private val _signupMessage = MutableStateFlow<String?>(null)
     val signupMessage: StateFlow<String?> = _signupMessage
 
-    // Estado para controlar la visibilidad de la contraseña
     private val _isPasswordVisible = MutableStateFlow(false)
     val isPasswordVisible: StateFlow<Boolean> = _isPasswordVisible
 
@@ -34,12 +31,10 @@ class SignUpViewModel: ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // Actualizar el correo electrónico
     fun updateEmail(email: String) {
         _signupForm.value = _signupForm.value.copy(email = email)
     }
 
-    // Actualizar la contraseña
     fun updatePassword(password: String) {
         _signupForm.value = _signupForm.value.copy(password = password)
     }
@@ -48,7 +43,6 @@ class SignUpViewModel: ViewModel() {
         _signupForm.value = _signupForm.value.copy(confirmPassword = confirmPassword)
     }
 
-    // Alternar la visibilidad de la contraseña
     fun togglePasswordVisibility() {
         _isPasswordVisible.value = !_isPasswordVisible.value
     }
@@ -71,7 +65,6 @@ class SignUpViewModel: ViewModel() {
             val email = _signupForm.value.email
             val password = _signupForm.value.password
 
-            // Validaciones básicas
             if (email.isEmpty() || password.isEmpty()) {
                 _signupMessage.value = "Por favor, complete todos los campos."
                 return@launch

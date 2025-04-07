@@ -35,7 +35,7 @@ class FirebaseAuthService {
     suspend fun signInWithEmailAndPassword(email: String, password: String): Pair<Boolean, String?> {
         return try {
             auth.signInWithEmailAndPassword(email, password).await()
-            Pair(true, null) // Éxito, sin mensaje de error
+            Pair(true, null)
         } catch (e: FirebaseAuthInvalidCredentialsException) {
             Pair(false, "Correo electrónico o contraseña incorrectos. ${e.message}")
         } catch (e: FirebaseAuthInvalidUserException) {

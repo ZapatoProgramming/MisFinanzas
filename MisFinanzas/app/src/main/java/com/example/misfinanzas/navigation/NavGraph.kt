@@ -43,11 +43,9 @@ fun NavGraph() {
         composable(AppScreens.Login.route) {
             LoginView(
                 onLoginSuccess = {
-                    // Navegar a la pantalla principal después del inicio de sesión
                     navController.navigate(AppScreens.NavigationHome.route)
                 },
                 onNavigateToSignUp = {
-                    // Navegar a la pantalla de registro
                     navController.navigate(AppScreens.SignUp.route)
                 }
             )
@@ -55,11 +53,9 @@ fun NavGraph() {
         composable(AppScreens.SignUp.route) {
             SignUpView(
                 onSignUpSuccess = {
-                    // Navegar a la pantalla principal después del registro
                     navController.navigate(AppScreens.Login.route)
                 },
                 onNavigateToLogin = {
-                    // Volver a la pantalla de inicio de sesión
                     navController.popBackStack()
                 }
             )

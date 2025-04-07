@@ -18,24 +18,19 @@ import com.example.misfinanzas.viewModels.login.LoginViewModel
 
 @Composable
 fun LoginView(
-    viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(), // ViewModel para la lógica de inicio de sesión
+    viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onLoginSuccess: () -> Unit,
     onNavigateToSignUp: () -> Unit
 ) {
-    // Estado del formulario de inicio de sesión
     val loginForm by viewModel.loginForm.collectAsState()
-    // Mensajes de error o éxito
     val loginMessage by viewModel.loginMessage.collectAsState()
-    // Estado de visibilidad de la contraseña
     val isPasswordVisible by viewModel.isPasswordVisible.collectAsState()
-
     val isLoading by viewModel.isLoading.collectAsState()
-
     val loginSuccess by viewModel.loginSuccess.collectAsState()
 
     LaunchedEffect(loginSuccess) {
         if (loginSuccess) {
-            onLoginSuccess() // Navega cuando el inicio de sesión es exitoso
+            onLoginSuccess()
         }
     }
 
@@ -51,12 +46,11 @@ fun LoginView(
         Spacer(modifier = Modifier.height(50.dp))
 
         Image(
-            painter = painterResource(id = R.drawable.logo), // Referencia a la imagen en drawable
-            contentDescription = "logo", // Descripción para accesibilidad
-            modifier = Modifier.size(300.dp) // Tamaño de la imagen
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "logo",
+            modifier = Modifier.size(300.dp)
         )
 
-        // Campo de correo electrónico
         TextField(
             value = loginForm.email,
             onValueChange = { viewModel.updateEmail(it) },
@@ -67,7 +61,6 @@ fun LoginView(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo de contraseña
         TextField(
             value = loginForm.password,
             onValueChange = { viewModel.updatePassword(it) },
@@ -75,7 +68,6 @@ fun LoginView(
             singleLine = true,
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                // Ícono de visibilidad de contraseña
                 IconButton(onClick = { viewModel.togglePasswordVisibility() }) {
                     Icon(
                         imageVector = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
@@ -107,8 +99,7 @@ fun LoginView(
             }
         }
 
-        // Enlace para recuperar contraseña
-        TextButton(onClick = { /* Navegar a la pantalla de recuperación de contraseña */ }) {
+        TextButton(onClick = {  }) {
             Text(text = "¿Olvidó su contraseña?",
                 color = MaterialTheme.colorScheme.tertiary )
 
@@ -126,7 +117,6 @@ fun LoginView(
             Text("Crear Cuenta")
         }
 
-        // Mostrar mensajes de error o éxito
         if (!loginMessage.isNullOrEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(

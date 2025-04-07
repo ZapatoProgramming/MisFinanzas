@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun DashboardView() {
-    // Obtener el mes actual (0 = Enero, 11 = Diciembre)
     val currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH)
     val months = listOf(
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -87,7 +86,6 @@ fun DashboardView() {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Botón central grande
         Box(
             modifier = Modifier
                 .size(150.dp)
@@ -117,5 +115,4 @@ fun DashboardView() {
         }
         Spacer(modifier = Modifier.weight(1f))
     }
-    // vamos
 }

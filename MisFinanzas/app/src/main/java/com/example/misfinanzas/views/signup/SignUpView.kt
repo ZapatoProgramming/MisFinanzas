@@ -40,22 +40,16 @@ fun SignUpView(
     viewModel: SignUpViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onNavigateToLogin: () -> Unit
 ){
-    // Estado del formulario de inicio de sesión
     val signupForm by viewModel.signupForm.collectAsState()
-    // Mensajes de error o éxito
     val signupMessage by viewModel.signupMessage.collectAsState()
-    // Estado de visibilidad de la contraseña
     val isPasswordVisible by viewModel.isPasswordVisible.collectAsState()
-
     val isPasswordVisibleTwo by viewModel.isPasswordVisibleTwo.collectAsState()
-
     val isLoading by viewModel.isLoading.collectAsState()
-
     val signUpSuccess by viewModel.signUpSuccess.collectAsState()
 
     LaunchedEffect(signUpSuccess) {
         if (signUpSuccess) {
-            onSignUpSuccess() // Navega cuando el inicio de sesión es exitoso
+            onSignUpSuccess()
         }
     }
 
@@ -77,21 +71,20 @@ fun SignUpView(
                 onNavigateToLogin()
             }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, // Ícono de flecha hacia atrás
-                    contentDescription = "Volver al Login", // Descripción para accesibilidad
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Volver al Login",
                     tint = MaterialTheme.colorScheme.tertiary
                 )
             }
         }
         Image(
-            painter = painterResource(id = R.drawable.logo), // Referencia a la imagen en drawable
-            contentDescription = "logo", // Descripción para accesibilidad
-            modifier = Modifier.size(150.dp) // Tamaño de la imagen
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "logo",
+            modifier = Modifier.size(150.dp)
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Campo de correo electrónico
         TextField(
             value = signupForm.email,
             onValueChange = { viewModel.updateEmail(it) },
@@ -102,7 +95,6 @@ fun SignUpView(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo de contraseña
         TextField(
             value = signupForm.password,
             onValueChange = { viewModel.updatePassword(it) },
@@ -110,7 +102,6 @@ fun SignUpView(
             singleLine = true,
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                // Ícono de visibilidad de contraseña
                 IconButton(onClick = { viewModel.togglePasswordVisibility() }) {
                     Icon(
                         imageVector = if (isPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
@@ -123,7 +114,6 @@ fun SignUpView(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo de contraseña
         TextField(
             value = signupForm.confirmPassword,
             onValueChange = { viewModel.updatePasswordTwo(it) },
@@ -131,7 +121,6 @@ fun SignUpView(
             singleLine = true,
             visualTransformation = if (isPasswordVisibleTwo) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                // Ícono de visibilidad de contraseña
                 IconButton(onClick = { viewModel.togglePasswordVisibilityTwo() }) {
                     Icon(
                         imageVector = if (isPasswordVisibleTwo) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
