@@ -26,4 +26,22 @@ object FirestoreUtils {
             null
         }
     }
+
+    suspend fun uploadDocument(
+        collectionName: String,
+        documentId: String,
+        data: Any
+    ): Boolean {
+        return try {
+            FirebaseFirestore.getInstance()
+                .collection(collectionName)
+                .document(documentId)
+                .set(data)
+                .await()
+            true // Éxito
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false // Error
+        }
+    }
 }

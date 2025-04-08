@@ -4,6 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.misfinanzas.auth.FirebaseAuthService
 import com.example.misfinanzas.models.SignUpModel
+import com.example.misfinanzas.models.UserDataSignUp
+import com.example.misfinanzas.utils.FirestoreUtils
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,6 +79,16 @@ class SignUpViewModel: ViewModel() {
             if (success) {
                 _signupMessage.value = "Creacion de cuenta exitosa."
                 _signUpSuccess.value = true
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+                    val userData = UserDataSignUp(
+                        name = _signupForm.value.name,
+                        last_name = _signupForm.value.lastName,
+                        has_entered_balance = false,
+                        has_added_first_transaction = false
+                    )
+                    async {createUserDocument(userId, userData)}.await()
+                }
             } else {
                 _signupMessage.value = errorMessage ?: "Error en la creación de cuenta."
                 _signUpSuccess.value = false
@@ -83,4 +97,14 @@ class SignUpViewModel: ViewModel() {
         }
     }
 
+    private fun createUserDocument(userId: String, userData: UserDataSignUp) {
+        viewModelScope.launch {
+            try {
+                val dataWithTimestamp = userData.copy(created_at = FieldValue.serverTimestamp())
+                FirestoreUtils.uploadDocument("User", userId, dataWithTimestamp)
+            } catch (e: Exception) {
+                _signupMessage.value = "Error al crear el documento del usuario: ${e.message}"
+            }
+        }
+    }
 }

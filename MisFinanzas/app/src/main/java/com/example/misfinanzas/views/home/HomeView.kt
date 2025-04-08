@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -182,9 +184,33 @@ fun TipsScreen() {
 }
 
 @Composable
-fun ProfileScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Profile Screen", color = MaterialTheme.colorScheme.onBackground)
+fun ProfileScreen(
+    onSignOut: () -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Profile Screen",
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { onSignOut() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                )
+            ) {
+                Text(text = "Cerrar Sesión")
+            }
+        }
     }
 }
 
@@ -214,7 +240,11 @@ fun HomeNavGraph(
             TipsScreen()
         }
         composable(HomeScreens.Profile.route) {
-            ProfileScreen()
+            ProfileScreen(
+                onSignOut = {
+                    FirebaseAuth.getInstance().signOut()
+                }
+            )
         }
         composable(HomeScreens.Suscriptions.route) {
             SuscriptionsScreen()
