@@ -25,14 +25,13 @@ import androidx.compose.material3.TextField
 import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.misfinanzas.viewModels.add.AddViewModel
-import com.example.misfinanzas.viewModels.dashboard.DashboardViewModel
+import com.example.misfinanzas.viewModels.home.HomeViewModel
 import com.example.misfinanzas.views.home.HomeScreens
 
 @Composable
 fun AddView(
-    viewModel: AddViewModel = viewModel(),
-    dashboardViewModel: DashboardViewModel? = null,
+    viewModel: HomeViewModel = viewModel(),
+    dashboardViewModel: HomeViewModel? = null,
     firstTime: Boolean = false,
     navController: NavController
 ) {
@@ -236,7 +235,7 @@ fun AddView(
                     onClick = {
                         navController.navigate(HomeScreens.Dashboard.route)
                         if (dashboardViewModel != null && firstTime) {
-                            dashboardViewModel.markFirstExpenseAdded()
+                            dashboardViewModel.markFirstTransactionAdded()
                         }
                     },
                     modifier = Modifier

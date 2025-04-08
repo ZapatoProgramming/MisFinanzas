@@ -31,16 +31,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.misfinanzas.viewModels.dashboard.DashboardViewModel
+import com.example.misfinanzas.viewModels.home.HomeViewModel
 import com.example.misfinanzas.views.home.HomeScreens
 
 @Composable
-fun DashboardView(viewModel: DashboardViewModel = viewModel(), navController: NavController) {
+fun DashboardView(viewModel: HomeViewModel = viewModel(), navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -86,7 +87,7 @@ fun DashboardView(viewModel: DashboardViewModel = viewModel(), navController: Na
         }
 
         Spacer(modifier = Modifier.height(32.dp))
-        if(!(viewModel.hasEnteredBalance && viewModel.hasAddedFirstExpense)) {
+        if(!(viewModel.hasEnteredBalance && viewModel.hasAddedFirstTransaction)) {
             Box(
                 modifier = Modifier
                     .size(150.dp)
@@ -98,7 +99,7 @@ fun DashboardView(viewModel: DashboardViewModel = viewModel(), navController: Na
                                 navController.navigate(HomeScreens.EnterBalance.route)
                             }
 
-                            !viewModel.hasAddedFirstExpense -> {
+                            !viewModel.hasAddedFirstTransaction -> {
                                 navController.navigate(HomeScreens.AddFirst.route)
                             }
                         }
@@ -131,7 +132,7 @@ fun DashboardView(viewModel: DashboardViewModel = viewModel(), navController: Na
 }
 
 @Composable
-fun EnterBalanceView(viewModel: DashboardViewModel = viewModel(), navController: NavController) {
+fun EnterBalanceView(viewModel: HomeViewModel = viewModel(), navController: NavController) {
     var balance by remember { mutableStateOf("") }
 
     Surface(

@@ -17,7 +17,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -26,12 +26,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.misfinanzas.viewModels.dashboard.DashboardViewModel
+import com.example.misfinanzas.viewModels.home.HomeViewModel
 import com.example.misfinanzas.views.add.AddView
 import com.example.misfinanzas.views.dashboard.DashboardView
 import com.example.misfinanzas.views.dashboard.EnterBalanceView
+import com.google.firebase.auth.FirebaseAuth
 
 sealed class HomeScreens(val route: String, val title: String, val icon: ImageVector? = null) {
     object Dashboard : HomeScreens("dashboard", "Dashboard", Icons.Default.BarChart)
@@ -44,11 +44,32 @@ sealed class HomeScreens(val route: String, val title: String, val icon: ImageVe
 }
 
 @Composable
-fun HomeView() {
+fun HomeView(viewModel: HomeViewModel = viewModel()) {
     val navController = rememberNavController()
 
+    LaunchedEffect(Unit) {
+        viewModel.navigationCommands.collect { command ->
+            when (command) {
+                is HomeViewModel.NavigationCommand.NavigateTo -> {
+                    navController.navigate(command.route)
+                }
+                is HomeViewModel.NavigationCommand.PopBackStack -> {
+                    navController.popBackStack()
+                }
+            }
+        }
+    }
+
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+    LaunchedEffect(userId) {
+        if (userId != null) {
+            viewModel.fetchUserData(userId)
+        }
+    }
+
     Scaffold(
-        bottomBar = { CustomBottomNavigationBar(navController = navController) }
+        bottomBar = { CustomBottomNavigationBar( viewModel = viewModel) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -57,14 +78,17 @@ fun HomeView() {
         ) {
             HomeNavGraph(
                 navController = navController,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                viewModel = viewModel
             )
         }
     }
 }
 
 @Composable
-fun CustomBottomNavigationBar(navController: NavHostController) {
+fun CustomBottomNavigationBar(
+    viewModel: HomeViewModel
+) {
     val screens = listOf(
         HomeScreens.Dashboard,
         HomeScreens.Tips,
@@ -72,9 +96,6 @@ fun CustomBottomNavigationBar(navController: NavHostController) {
         HomeScreens.Suscriptions,
         HomeScreens.Profile
     )
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
 
     Row(
         modifier = Modifier
@@ -85,21 +106,15 @@ fun CustomBottomNavigationBar(navController: NavHostController) {
         verticalAlignment = Alignment.Bottom
     ) {
         screens.take(2).forEach { screen ->
-            NavigationBarItem(screen, currentRoute, navController)
+            NavigationBarItem(screen, viewModel.currentRoute, viewModel)
         }
-        val addSelected = currentRoute == screens[2].route
+        val addSelected = viewModel.currentRoute == screens[2].route
         val iconSize = 54.dp
         Box(
             modifier = Modifier
                 .size(iconSize)
                 .clickable {
-                    navController.navigate(HomeScreens.Add.route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    viewModel.navigateTo(HomeScreens.Add.route)
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -115,7 +130,7 @@ fun CustomBottomNavigationBar(navController: NavHostController) {
             )
         }
         screens.takeLast(2).forEach { screen ->
-            NavigationBarItem(screen, currentRoute, navController)
+            NavigationBarItem(screen, viewModel.currentRoute, viewModel)
         }
     }
 }
@@ -123,8 +138,8 @@ fun CustomBottomNavigationBar(navController: NavHostController) {
 @Composable
 private fun NavigationBarItem(
     screen: HomeScreens,
-    currentRoute: String?,
-    navController: NavHostController
+    currentRoute: String,
+    viewModel: HomeViewModel
 ) {
     val isSelected = currentRoute == screen.route
     Column(
@@ -132,13 +147,7 @@ private fun NavigationBarItem(
         modifier = Modifier
             .clickable {
                 if (!isSelected) {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    viewModel.navigateTo(screen.route)
                 }
             }
     ) {
@@ -177,15 +186,19 @@ fun SuscriptionsScreen() {
 }
 
 @Composable
-fun HomeNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
-    val viewModel: DashboardViewModel = viewModel()
+fun HomeNavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel
+) {
+    val homeViewModel: HomeViewModel = viewModel()
     NavHost(
         navController = navController,
-        startDestination = HomeScreens.Dashboard.route,
+        startDestination = viewModel.currentRoute,
         modifier = modifier
     ) {
         composable(HomeScreens.Dashboard.route) {
-            DashboardView(viewModel = viewModel, navController = navController)
+            DashboardView(viewModel = homeViewModel, navController = navController)
         }
         composable(HomeScreens.Tips.route) {
             TipsScreen()
@@ -200,10 +213,10 @@ fun HomeNavGraph(navController: NavHostController, modifier: Modifier = Modifier
             AddView(firstTime = false, navController = navController)
         }
         composable(HomeScreens.AddFirst.route) {
-            AddView(firstTime = true, navController = navController, dashboardViewModel = viewModel)
+            AddView(firstTime = true, navController = navController, dashboardViewModel = homeViewModel)
         }
         composable(HomeScreens.EnterBalance.route) {
-            EnterBalanceView(viewModel = viewModel, navController = navController)
+            EnterBalanceView(viewModel = homeViewModel, navController = navController)
         }
     }
 }
