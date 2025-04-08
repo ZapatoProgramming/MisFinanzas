@@ -13,6 +13,7 @@ import com.example.misfinanzas.models.DashboardModel
 import com.example.misfinanzas.models.UserData
 import com.example.misfinanzas.utils.FirestoreUtils
 import com.example.misfinanzas.views.home.HomeScreens
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -77,8 +78,39 @@ class HomeViewModel : ViewModel() {
     }
 
     fun updateBalance(newBalance: Double) {
-        balance = newBalance
-        hasEnteredBalance = true
+        viewModelScope.launch {
+            try {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+                    balance = newBalance
+                    hasEnteredBalance = true
+
+                    val balanceData = Balance(current_balance = newBalance)
+                    val success = FirestoreUtils.uploadDocument("Balance", userId, balanceData)
+
+                    if (!success) {
+                        _error.value = "Error al guardar el saldo en Firestore."
+                        return@launch
+                    }
+
+                    val userUpdateSuccess = FirestoreUtils.updateField(
+                        collectionName = "User",
+                        documentId = userId,
+                        fieldName = "has_entered_balance",
+                        fieldValue = true
+                    )
+
+                    if (!userUpdateSuccess) {
+                        _error.value = "Error al actualizar el documento User."
+                        return@launch
+                    }
+                } else {
+                    _error.value = "No se pudo obtener el ID del usuario."
+                }
+            } catch (e: Exception) {
+                _error.value = "Error inesperado: ${e.message}"
+            }
+        }
     }
 
     fun markFirstTransactionAdded() {

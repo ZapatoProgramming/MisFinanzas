@@ -48,7 +48,7 @@ fun LoginView(
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "logo",
-            modifier = Modifier.size(300.dp)
+            modifier = Modifier.size(200.dp)
         )
 
         TextField(

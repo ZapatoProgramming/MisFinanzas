@@ -44,4 +44,23 @@ object FirestoreUtils {
             false // Error
         }
     }
+
+    suspend fun updateField(
+        collectionName: String,
+        documentId: String,
+        fieldName: String,
+        fieldValue: Any
+    ): Boolean {
+        return try {
+            FirebaseFirestore.getInstance()
+                .collection(collectionName)
+                .document(documentId)
+                .update(fieldName, fieldValue)
+                .await()
+            true // Éxito
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false // Error
+        }
+    }
 }
