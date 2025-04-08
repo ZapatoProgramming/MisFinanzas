@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.misfinanzas.models.AddModel
+import com.example.misfinanzas.models.Balance
 import com.example.misfinanzas.models.DashboardModel
 import com.example.misfinanzas.models.UserData
 import com.example.misfinanzas.utils.FirestoreUtils
@@ -16,19 +17,16 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
 
     private val _userData = MutableStateFlow<UserData?>(null)
-    val userData: StateFlow<UserData?> = _userData
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
 
     private val _currentRoute = mutableStateOf(HomeScreens.Dashboard.route)
     val currentRoute: String get() = _currentRoute.value
@@ -167,8 +165,30 @@ class HomeViewModel : ViewModel() {
 
                 if (fetchedUserData != null) {
                     _userData.value = fetchedUserData
+                    _userData.value?.let { userData ->
+                        hasEnteredBalance = userData.has_entered_balance
+                        hasAddedFirstTransaction = userData.has_added_first_transaction
+                    }
+
                 }
             } catch (e: Exception) {
+                _error.value = "Error al cargar los datos: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun fetchBalance(userId: String){
+        viewModelScope.launch {
+            try {
+                val fetchedBalance = FirestoreUtils.fetchDocumentAs<Balance>("Balance",userId)
+                if (fetchedBalance != null) {
+                    balance = fetchedBalance.current_balance
+                } else {
+                    _error.value = "No se encontró información de saldo para este usuario."
+                }
+            }catch (e: Exception) {
                 _error.value = "Error al cargar los datos: ${e.message}"
             } finally {
                 _isLoading.value = false

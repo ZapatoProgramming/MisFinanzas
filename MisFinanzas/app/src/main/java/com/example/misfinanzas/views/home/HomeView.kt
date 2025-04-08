@@ -18,6 +18,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -31,6 +33,7 @@ import com.example.misfinanzas.viewModels.home.HomeViewModel
 import com.example.misfinanzas.views.add.AddView
 import com.example.misfinanzas.views.dashboard.DashboardView
 import com.example.misfinanzas.views.dashboard.EnterBalanceView
+import com.example.misfinanzas.views.splash.SplashView
 import com.google.firebase.auth.FirebaseAuth
 
 sealed class HomeScreens(val route: String, val title: String, val icon: ImageVector? = null) {
@@ -61,10 +64,12 @@ fun HomeView(viewModel: HomeViewModel = viewModel()) {
     }
 
     val userId = FirebaseAuth.getInstance().currentUser?.uid
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(userId) {
         if (userId != null) {
             viewModel.fetchUserData(userId)
+            viewModel.fetchBalance(userId)
         }
     }
 
@@ -76,11 +81,16 @@ fun HomeView(viewModel: HomeViewModel = viewModel()) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            HomeNavGraph(
-                navController = navController,
-                modifier = Modifier.fillMaxSize(),
-                viewModel = viewModel
-            )
+            if(isLoading){
+                SplashView()
+            }
+            else {
+                HomeNavGraph(
+                    navController = navController,
+                    modifier = Modifier.fillMaxSize(),
+                    viewModel = viewModel
+                )
+            }
         }
     }
 }

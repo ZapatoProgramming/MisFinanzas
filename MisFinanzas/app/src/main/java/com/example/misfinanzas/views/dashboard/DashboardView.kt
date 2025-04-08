@@ -1,14 +1,14 @@
 package com.example.misfinanzas.views.dashboard
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -88,26 +87,27 @@ fun DashboardView(viewModel: HomeViewModel = viewModel(), navController: NavCont
 
         Spacer(modifier = Modifier.height(32.dp))
         if(!(viewModel.hasEnteredBalance && viewModel.hasAddedFirstTransaction)) {
-            Box(
-                modifier = Modifier
-                    .size(150.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondary)
-                    .clickable {
-                        when {
-                            !viewModel.hasEnteredBalance -> {
-                                navController.navigate(HomeScreens.EnterBalance.route)
-                            }
+            FloatingActionButton(
+                onClick = {
+                    when {
+                        !viewModel.hasEnteredBalance -> {
+                            navController.navigate(HomeScreens.EnterBalance.route)
+                        }
 
-                            !viewModel.hasAddedFirstTransaction -> {
-                                navController.navigate(HomeScreens.AddFirst.route)
-                            }
+                        !viewModel.hasAddedFirstTransaction -> {
+                            navController.navigate(HomeScreens.AddFirst.route)
                         }
                     }
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
+                },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.secondary
             ) {
-                Text("+", fontSize = 100.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(
+                    text = "+",
+                    fontSize = 50.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
