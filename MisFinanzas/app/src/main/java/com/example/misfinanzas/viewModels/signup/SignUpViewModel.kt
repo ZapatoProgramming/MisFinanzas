@@ -30,7 +30,6 @@ class SignUpViewModel: ViewModel() {
     val isPasswordVisibleTwo: StateFlow<Boolean> = _isPasswordVisibleTwo
 
     private val _signUpSuccess = MutableStateFlow(false)
-    val signUpSuccess: StateFlow<Boolean> = _signUpSuccess
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading

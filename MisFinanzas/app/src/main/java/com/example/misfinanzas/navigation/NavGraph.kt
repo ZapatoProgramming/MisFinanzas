@@ -46,9 +46,6 @@ fun NavGraph(firebaseAuthService: FirebaseAuthService) {
         }
         composable(AppScreens.SignUp.route) {
             SignUpView(
-                onSignUpSuccess = {
-                    navController.navigate(AppScreens.Login.route)
-                },
                 onNavigateToLogin = {
                     navController.popBackStack()
                 }

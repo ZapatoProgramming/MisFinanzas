@@ -22,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,7 +35,6 @@ import com.example.misfinanzas.viewModels.signup.SignUpViewModel
 
 @Composable
 fun SignUpView(
-    onSignUpSuccess: () -> Unit,
     viewModel: SignUpViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onNavigateToLogin: () -> Unit
 ){
@@ -45,14 +43,6 @@ fun SignUpView(
     val isPasswordVisible by viewModel.isPasswordVisible.collectAsState()
     val isPasswordVisibleTwo by viewModel.isPasswordVisibleTwo.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val signUpSuccess by viewModel.signUpSuccess.collectAsState()
-
-    LaunchedEffect(signUpSuccess) {
-        if (signUpSuccess) {
-            onSignUpSuccess()
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
