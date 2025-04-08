@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.gms:google-services:4.3.15")  // Para Firebase
     implementation("com.google.android.gms:play-services-tasks:18.0.2")  // Para Task API
     implementation("androidx.navigation:navigation-compose:2.7.3")
