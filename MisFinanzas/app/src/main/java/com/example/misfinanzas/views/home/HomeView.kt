@@ -253,7 +253,7 @@ fun HomeNavGraph(
             AddView(firstTime = false, navController = navController)
         }
         composable(HomeScreens.AddFirst.route) {
-            AddView(firstTime = true, navController = navController, dashboardViewModel = homeViewModel)
+            AddView(firstTime = true, navController = navController, viewModel = homeViewModel)
         }
         composable(HomeScreens.EnterBalance.route) {
             EnterBalanceView(viewModel = homeViewModel, navController = navController)

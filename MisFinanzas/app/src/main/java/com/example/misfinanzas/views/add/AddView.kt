@@ -29,15 +29,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.misfinanzas.viewModels.home.HomeViewModel
 import com.example.misfinanzas.views.home.HomeScreens
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun AddView(
     viewModel: HomeViewModel = viewModel(),
-    dashboardViewModel: HomeViewModel? = null,
     firstTime: Boolean = false,
     navController: NavController
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var firstTransactionAdded = viewModel.hasAddedFirstTransaction
 
     val buttonColor = when (viewModel.tipoTransaccion) {
         "Ingreso" -> MaterialTheme.colorScheme.primary
@@ -237,8 +238,11 @@ fun AddView(
                 Button(
                     onClick = {
                         navController.navigate(HomeScreens.Dashboard.route)
-                        if (dashboardViewModel != null && firstTime) {
-                            dashboardViewModel.markFirstTransactionAdded()
+                        if(!firstTransactionAdded) viewModel.markFirstTransactionAdded()
+                        val userId = FirebaseAuth.getInstance().currentUser?.uid
+                        if (userId != null) {
+                            viewModel.createTransaction(userId)
+                            navController.navigate(HomeScreens.Dashboard.route)
                         }
                     },
                     modifier = Modifier

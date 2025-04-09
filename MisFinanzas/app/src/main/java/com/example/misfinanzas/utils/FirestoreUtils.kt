@@ -38,10 +38,10 @@ object FirestoreUtils {
                 .document(documentId)
                 .set(data)
                 .await()
-            true // Éxito
+            true
         } catch (e: Exception) {
             e.printStackTrace()
-            false // Error
+            false
         }
     }
 
@@ -57,10 +57,10 @@ object FirestoreUtils {
                 .document(documentId)
                 .update(fieldName, fieldValue)
                 .await()
-            true // Éxito
+            true
         } catch (e: Exception) {
             e.printStackTrace()
-            false // Error
+            false
         }
     }
 }
