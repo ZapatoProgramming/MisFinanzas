@@ -72,6 +72,7 @@ fun HomeView(viewModel: HomeViewModel = viewModel()) {
         if (userId != null) {
             viewModel.fetchUserData(userId)
             viewModel.fetchBalance(userId)
+            viewModel.checkAndApplyPendingTransactions(userId)
         }
     }
 
@@ -250,7 +251,7 @@ fun HomeNavGraph(
             SuscriptionsScreen()
         }
         composable(HomeScreens.Add.route) {
-            AddView(firstTime = false, navController = navController)
+            AddView(firstTime = false, viewModel = homeViewModel ,navController = navController)
         }
         composable(HomeScreens.AddFirst.route) {
             AddView(firstTime = true, navController = navController, viewModel = homeViewModel)

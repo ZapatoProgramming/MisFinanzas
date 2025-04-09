@@ -34,7 +34,7 @@ import com.example.misfinanzas.viewModels.home.HomeViewModel
 import com.example.misfinanzas.views.home.HomeScreens
 
 @Composable
-fun DashboardView(viewModel: HomeViewModel = viewModel(), navController: NavController) {
+fun DashboardView(viewModel: HomeViewModel, navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize(),

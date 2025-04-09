@@ -63,4 +63,16 @@ object FirestoreUtils {
             false
         }
     }
+
+    suspend fun <T> fetchCollectionAs(collectionPath: String, clazz: Class<T>): List<T> {
+        return try {
+            val collection = FirebaseFirestore.getInstance().collection(collectionPath)
+            val querySnapshot = collection.get().await()
+            querySnapshot.documents.mapNotNull { document ->
+                document.toObject(clazz)
+            }
+        } catch (e: Exception) {
+            throw RuntimeException("Error al obtener la colección: ${e.message}")
+        }
+    }
 }
