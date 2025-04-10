@@ -1,4 +1,4 @@
-package com.example.misfinanzas.views.dashboard
+package com.example.misfinanzas.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -30,8 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.misfinanzas.viewModels.home.HomeViewModel
-import com.example.misfinanzas.views.home.HomeScreens
+import com.example.misfinanzas.viewModels.HomeViewModel
 
 @Composable
 fun DashboardView(viewModel: HomeViewModel, navController: NavController) {

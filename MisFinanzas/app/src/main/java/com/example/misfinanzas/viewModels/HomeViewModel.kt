@@ -1,4 +1,4 @@
-package com.example.misfinanzas.viewModels.home
+package com.example.misfinanzas.viewModels
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -7,8 +7,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.misfinanzas.models.*
-import com.example.misfinanzas.views.home.HomeScreens
+import com.example.misfinanzas.models.AddModel
+import com.example.misfinanzas.models.Balance
+import com.example.misfinanzas.models.DashboardModel
+import com.example.misfinanzas.models.Subscription
+import com.example.misfinanzas.models.Transaction
+import com.example.misfinanzas.models.TransactionRepository
+import com.example.misfinanzas.models.UserData
+import com.example.misfinanzas.views.HomeScreens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -157,7 +163,10 @@ class HomeViewModel(private val repository: TransactionRepository = TransactionR
             category = categoria,
             start_date = transactionDate,
             frequency = frecuenciaSubscripcion,
-            next_payment_date = repository.calculateNextPaymentDate(transactionDate, frecuenciaSubscripcion),
+            next_payment_date = repository.calculateNextPaymentDate(
+                transactionDate,
+                frecuenciaSubscripcion
+            ),
             created_at = FieldValue.serverTimestamp()
         )
         if (!repository.uploadSubscription(userId, subscription)) {

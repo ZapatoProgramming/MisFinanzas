@@ -1,4 +1,4 @@
-package com.example.misfinanzas.views.home
+package com.example.misfinanzas.views
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,11 +31,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.misfinanzas.viewModels.home.HomeViewModel
-import com.example.misfinanzas.views.add.AddView
-import com.example.misfinanzas.views.dashboard.DashboardView
-import com.example.misfinanzas.views.dashboard.EnterBalanceView
-import com.example.misfinanzas.views.splash.SplashView
+import com.example.misfinanzas.viewModels.HomeViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 sealed class HomeScreens(val route: String, val title: String, val icon: ImageVector? = null) {

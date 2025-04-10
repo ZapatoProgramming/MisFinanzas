@@ -1,4 +1,4 @@
-package com.example.misfinanzas.viewModels.signup
+package com.example.misfinanzas.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

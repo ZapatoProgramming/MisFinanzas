@@ -1,4 +1,4 @@
-package com.example.misfinanzas.views.signup
+package com.example.misfinanzas.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -30,12 +30,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.misfinanzas.R
-import com.example.misfinanzas.viewModels.signup.SignUpViewModel
+import com.example.misfinanzas.viewModels.SignUpViewModel
 
 @Composable
 fun SignUpView(
-    viewModel: SignUpViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    viewModel: SignUpViewModel = viewModel(),
     onNavigateToLogin: () -> Unit
 ){
     val signupForm by viewModel.signupForm.collectAsState()

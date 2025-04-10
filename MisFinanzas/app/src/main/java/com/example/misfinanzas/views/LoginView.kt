@@ -1,4 +1,4 @@
-package com.example.misfinanzas.views.login
+package com.example.misfinanzas.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -13,12 +13,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.misfinanzas.R
-import com.example.misfinanzas.viewModels.login.LoginViewModel
+import com.example.misfinanzas.viewModels.LoginViewModel
 
 @Composable
 fun LoginView(
-    viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    viewModel: LoginViewModel = viewModel(),
     onLoginSuccess: () -> Unit,
     onNavigateToSignUp: () -> Unit
 ) {

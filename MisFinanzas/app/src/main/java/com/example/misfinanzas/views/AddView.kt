@@ -1,4 +1,4 @@
-package com.example.misfinanzas.views.add
+package com.example.misfinanzas.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,8 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
-import com.example.misfinanzas.viewModels.home.HomeViewModel
-import com.example.misfinanzas.views.home.HomeScreens
+import com.example.misfinanzas.viewModels.HomeViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable

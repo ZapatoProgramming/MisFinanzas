@@ -1,4 +1,4 @@
-package com.example.misfinanzas.views.splash
+package com.example.misfinanzas.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

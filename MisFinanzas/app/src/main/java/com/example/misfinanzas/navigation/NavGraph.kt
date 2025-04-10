@@ -7,10 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.misfinanzas.auth.FirebaseAuthService
-import com.example.misfinanzas.views.home.HomeView
-import com.example.misfinanzas.views.login.LoginView
-import com.example.misfinanzas.views.signup.SignUpView
-import com.example.misfinanzas.views.splash.SplashView
+import com.example.misfinanzas.views.HomeView
+import com.example.misfinanzas.views.LoginView
+import com.example.misfinanzas.views.SignUpView
+import com.example.misfinanzas.views.SplashView
 
 @Composable
 fun NavGraph(firebaseAuthService: FirebaseAuthService) {
