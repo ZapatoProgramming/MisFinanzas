@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
 }
 
 android {
@@ -41,6 +42,11 @@ android {
 }
 
 dependencies {
+    // Usa la versión más reciente compatible
+    val room_version = "2.6.0"
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:2.6.0")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.gms:google-services:4.3.15")  // Para Firebase
     implementation("com.google.android.gms:play-services-tasks:18.0.2")  // Para Task API

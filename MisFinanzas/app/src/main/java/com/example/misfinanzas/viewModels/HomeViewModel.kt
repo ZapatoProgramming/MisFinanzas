@@ -14,6 +14,8 @@ import com.example.misfinanzas.models.Subscription
 import com.example.misfinanzas.models.Transaction
 import com.example.misfinanzas.repositories.TransactionRepository
 import com.example.misfinanzas.models.UserData
+import com.example.misfinanzas.repositories.RoomRepository
+import com.example.misfinanzas.room.GlobalDatabase
 import com.example.misfinanzas.views.HomeScreens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -26,7 +28,11 @@ import java.util.Date
 
 class HomeViewModel(
     private val repository: TransactionRepository = TransactionRepository()
-) : ViewModel() {
+): ViewModel(){
+
+    val transactionDao = GlobalDatabase.transactionDao
+    val roomRepository = RoomRepository(transactionDao)
+
 
     // State
     private val _userData = MutableStateFlow<UserData?>(null)
