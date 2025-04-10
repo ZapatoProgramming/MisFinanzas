@@ -12,7 +12,7 @@ import com.example.misfinanzas.models.Balance
 import com.example.misfinanzas.models.DashboardModel
 import com.example.misfinanzas.models.Subscription
 import com.example.misfinanzas.models.Transaction
-import com.example.misfinanzas.models.TransactionRepository
+import com.example.misfinanzas.repositories.TransactionRepository
 import com.example.misfinanzas.models.UserData
 import com.example.misfinanzas.views.HomeScreens
 import com.google.firebase.auth.FirebaseAuth
@@ -24,54 +24,64 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.util.Date
 
-class HomeViewModel(private val repository: TransactionRepository = TransactionRepository()) : ViewModel() {
+class HomeViewModel(
+    private val repository: TransactionRepository = TransactionRepository()
+) : ViewModel() {
 
+    // State
     private val _userData = MutableStateFlow<UserData?>(null)
-    //private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
-    //private val _subscriptions = MutableStateFlow<List<Subscription>>(emptyList())
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
+
     private val _error = MutableStateFlow<String?>(null)
+
     private val _navigationCommands = MutableSharedFlow<NavigationCommand>()
     val navigationCommands = _navigationCommands.asSharedFlow()
+
     private val _currentRoute = mutableStateOf(HomeScreens.Dashboard.route)
     val currentRoute: String get() = _currentRoute.value
 
-    var selectedMonth by mutableStateOf("")
-        private set
+    val months = DashboardModel.months
     var currentIndex by mutableIntStateOf(DashboardModel.getCurrentMonthIndex())
         private set
-    val months = DashboardModel.months
+    var selectedMonth by mutableStateOf(months[currentIndex])
+        private set
+
+    // User state
     var balance by mutableDoubleStateOf(0.0)
     var hasEnteredBalance by mutableStateOf(false)
         private set
     var hasAddedFirstTransaction by mutableStateOf(false)
+        private set
+
+    // Transaction inputs
     var cantidad by mutableStateOf("")
-        private set
     var categoria by mutableStateOf("")
-        private set
     var dia by mutableStateOf("")
     var mes by mutableStateOf("")
     var anio by mutableStateOf("")
     var esHoy by mutableStateOf(false)
-        private set
     var esSubscripcion by mutableStateOf(false)
-        private set
     var frecuenciaSubscripcion by mutableStateOf("Mensual")
-        private set
     var tipoTransaccion by mutableStateOf("Gasto")
-        private set
+
     val opcionesFrecuencia = listOf("Mensual", "Anual")
+
+    val message: String
+        get() = when {
+            !hasEnteredBalance && !hasAddedFirstTransaction -> "Ingresa tu primer saldo y primera transacción"
+            hasEnteredBalance && !hasAddedFirstTransaction -> "Ingresa tu primera transacción"
+            else -> "Crea tu historial de ingresos y gastos"
+        }
 
     init {
         updateSelectedMonth()
     }
 
+    // Navigation
     fun navigateTo(route: String) {
-        viewModelScope.launch {
-            _currentRoute.value = route
-            _navigationCommands.emit(NavigationCommand.NavigateTo(route))
-        }
+        _currentRoute.value = route
+        viewModelScope.launch { _navigationCommands.emit(NavigationCommand.NavigateTo(route)) }
     }
 
     fun navigateToPreviousMonth() {
@@ -82,112 +92,85 @@ class HomeViewModel(private val repository: TransactionRepository = TransactionR
     }
 
     fun navigateToNextMonth() {
-        if (currentIndex < months.size - 1) {
+        if (currentIndex < months.lastIndex) {
             currentIndex++
             updateSelectedMonth()
         }
     }
 
-    val message: String
-        get() = when {
-            !hasEnteredBalance && !hasAddedFirstTransaction -> "Ingresa tu primer saldo y primera transacción"
-            hasEnteredBalance && !hasAddedFirstTransaction -> "Ingresa tu primera transacción"
-            else -> "Crea tu historial de ingresos y gastos"
-        }
-
     private fun updateSelectedMonth() {
         selectedMonth = months[currentIndex]
     }
 
-    fun updateCantidad(value: String) {
-        cantidad = value
-    }
-
-    fun updateCategoria(value: String) {
-        categoria = value
-    }
+    // Transaction input handlers
+    fun updateCantidad(value: String) { cantidad = value }
+    fun updateCategoria(value: String) { categoria = value }
+    fun updateFrecuenciaSubscripcion(value: String) { frecuenciaSubscripcion = value }
+    fun updateTipoTransaccion(value: String) { tipoTransaccion = value }
 
     fun toggleEsHoy(value: Boolean) {
         esHoy = value
         if (value) {
-            val (diaHoy, mesHoy, anioHoy) = AddModel.getCurrentDate()
-            dia = diaHoy
-            mes = mesHoy
-            anio = anioHoy
+            val (d, m, a) = AddModel.getCurrentDate()
+            dia = d
+            mes = m
+            anio = a
         }
-    }
-
-    fun updateFrecuenciaSubscripcion(value: String) {
-        frecuenciaSubscripcion = value
     }
 
     fun toggleEsSubscripcion(value: Boolean) {
         esSubscripcion = value
     }
 
-    fun updateTipoTransaccion(value: String) {
-        tipoTransaccion = value
-    }
+    // Core transaction logic
+    fun createTransaction(userId: String) = viewModelScope.launch {
+        _isLoading.value = true
+        try {
+            val amount = repository.validateAmount(cantidad)
+            val date = repository.getTransactionDate(esHoy, dia, mes, anio)
 
-    fun createTransaction(userId: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val amount = repository.validateAmount(cantidad)
-                val transactionDate = repository.getTransactionDate(esHoy, dia, mes, anio)
-
-                if (esSubscripcion) {
-                    handleSubscription(userId, amount, transactionDate)
-                } else {
-                    handleRegularTransaction(userId, amount, transactionDate)
-                }
-
-                if (!hasAddedFirstTransaction) {
-                    markFirstTransactionAdded()
-                }
-
-                clearTransactionFields()
-
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Error inesperado"
-            } finally {
-                _isLoading.value = false
+            if (esSubscripcion) {
+                saveSubscription(userId, amount, date)
+            } else {
+                saveTransaction(userId, amount, date)
             }
+
+            if (!hasAddedFirstTransaction) markFirstTransactionAdded()
+            resetTransactionInputs()
+        } catch (e: Exception) {
+            _error.value = e.message ?: "Error inesperado"
+        } finally {
+            _isLoading.value = false
         }
     }
 
-    private suspend fun handleSubscription(userId: String, amount: Double, transactionDate: Date) {
-        val subscription = Subscription(
+    private suspend fun saveSubscription(userId: String, amount: Double, date: Date) {
+        val sub = Subscription(
             type = tipoTransaccion,
             amount = amount,
             category = categoria,
-            start_date = transactionDate,
+            start_date = date,
             frequency = frecuenciaSubscripcion,
-            next_payment_date = repository.calculateNextPaymentDate(
-                transactionDate,
-                frecuenciaSubscripcion
-            ),
+            next_payment_date = repository.calculateNextPaymentDate(date, frecuenciaSubscripcion),
             created_at = FieldValue.serverTimestamp()
         )
-        if (!repository.uploadSubscription(userId, subscription)) {
+        if (!repository.uploadSubscription(userId, sub)) {
             _error.value = "Error al guardar la suscripción."
         }
     }
 
-    private suspend fun handleRegularTransaction(userId: String, amount: Double, transactionDate: Date) {
+    private suspend fun saveTransaction(userId: String, amount: Double, date: Date) {
         val transaction = Transaction(
             type = tipoTransaccion,
             amount = amount,
             category = categoria,
-            date = transactionDate,
+            date = date,
             created_at = FieldValue.serverTimestamp(),
             solved = false
         )
 
-        if (!repository.isDateInFuture(transactionDate)) {
-            if (transaction.type == "Gasto") applyExpense(transaction.amount)
-            else applyIncome(transaction.amount)
-
+        if (!repository.isDateInFuture(date)) {
+            if (transaction.type == "Gasto") applyExpense(amount) else applyIncome(amount)
             transaction.solved = true
         }
 
@@ -196,49 +179,7 @@ class HomeViewModel(private val repository: TransactionRepository = TransactionR
         }
     }
 
-    fun updateBalance(newBalance: Double) {
-        viewModelScope.launch {
-            try {
-                val userId = getCurrentUserId()
-                if (userId != null) {
-                    balance = newBalance
-                    if(!hasEnteredBalance) {
-                        hasEnteredBalance = true
-                        if (!repository.updateUserField(userId, "has_entered_balance", true)) {
-                            _error.value = "Error al actualizar el estado de has_entered_balance en Firestore."
-                            return@launch
-                        }
-                    }
-
-                    // Actualizar el saldo en Firestore
-                    if (!repository.updateBalance(userId, newBalance)) {
-                        _error.value = "Error al guardar el saldo en Firestore."
-                        return@launch
-                    }
-                } else {
-                    _error.value = "No se pudo obtener el ID del usuario."
-                }
-            } catch (e: Exception) {
-                _error.value = "Error inesperado: ${e.message}"
-            }
-        }
-    }
-
-    fun markFirstTransactionAdded() {
-        hasAddedFirstTransaction = true
-    }
-
-    fun applyExpense(expense: Double) {
-        val newBalance = balance - expense
-        updateBalance(newBalance)
-    }
-
-    fun applyIncome(income: Double) {
-        val newBalance = balance + income
-        updateBalance(newBalance)
-    }
-
-    private fun clearTransactionFields() {
+    private fun resetTransactionInputs() {
         cantidad = ""
         categoria = ""
         dia = ""
@@ -250,71 +191,74 @@ class HomeViewModel(private val repository: TransactionRepository = TransactionR
         tipoTransaccion = "Gasto"
     }
 
-    sealed class NavigationCommand {
-        data class NavigateTo(val route: String) : NavigationCommand()
-        object PopBackStack : NavigationCommand()
-    }
-
-    fun fetchUserData(userId: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val fetchedUserData = repository.fetchUserData(userId)
-                updateUserData(fetchedUserData)
-            } catch (e: Exception) {
-                _error.value = "Error al cargar los datos: ${e.message}"
-            } finally {
-                _isLoading.value = false
+    fun updateBalance(newBalance: Double) = viewModelScope.launch {
+        try {
+            val userId = getCurrentUserId() ?: run {
+                _error.value = "No se pudo obtener el ID del usuario."
+                return@launch
             }
+
+            balance = newBalance
+
+            if (!hasEnteredBalance) {
+                hasEnteredBalance = true
+                if (!repository.updateUserField(userId, "has_entered_balance", true)) {
+                    _error.value = "Error al actualizar has_entered_balance"
+                    return@launch
+                }
+            }
+
+            if (!repository.updateBalance(userId, newBalance)) {
+                _error.value = "Error al guardar el saldo."
+            }
+
+        } catch (e: Exception) {
+            _error.value = "Error inesperado: ${e.message}"
         }
     }
 
-    private fun updateUserData(userData: UserData?) {
-        _userData.value = userData
-        userData?.let {
+    fun applyExpense(expense: Double) = updateBalance(balance - expense)
+    fun applyIncome(income: Double) = updateBalance(balance + income)
+    fun markFirstTransactionAdded() { hasAddedFirstTransaction = true }
+
+    fun fetchUserData(userId: String) = viewModelScope.launch {
+        _isLoading.value = true
+        try {
+            updateUserData(repository.fetchUserData(userId))
+        } catch (e: Exception) {
+            _error.value = "Error al cargar datos: ${e.message}"
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    private fun updateUserData(data: UserData?) {
+        _userData.value = data
+        data?.let {
             hasEnteredBalance = it.has_entered_balance
             hasAddedFirstTransaction = it.has_added_first_transaction
         }
     }
 
-    fun fetchBalance(userId: String) {
-        viewModelScope.launch {
-            try {
-                val fetchedBalance = repository.fetchBalance(userId)
-                updateBalanceState(fetchedBalance)
-            } catch (e: Exception) {
-                _error.value = "Error al cargar los datos: ${e.message}"
-            } finally {
-                _isLoading.value = false
-            }
+    fun fetchBalance(userId: String) = viewModelScope.launch {
+        _isLoading.value = true
+        try {
+            updateBalanceState(repository.fetchBalance(userId))
+        } catch (e: Exception) {
+            _error.value = "Error al cargar el saldo: ${e.message}"
+        } finally {
+            _isLoading.value = false
         }
     }
 
-    private fun updateBalanceState(balanceData: Balance?) {
-        balance = balanceData?.current_balance ?: 0.0
+    private fun updateBalanceState(data: Balance?) {
+        balance = data?.current_balance ?: 0.0
     }
 
-    private fun getCurrentUserId(): String? {
-        return FirebaseAuth.getInstance().currentUser?.uid
-    }
+    private fun getCurrentUserId(): String? = FirebaseAuth.getInstance().currentUser?.uid
 
-    fun checkAndApplyPendingTransactions(userId: String) {
-        viewModelScope.launch {
-            try {
-                val pendingTransactions = repository.fetchPendingTransactions(userId)
-                pendingTransactions.forEach { transaction ->
-                    if (transaction.date != null && !transaction.solved && !repository.isDateInFuture(transaction.date)) {
-                        // Aplicar el cambio al saldo
-                        if (transaction.type == "Gasto") applyExpense(transaction.amount)
-                        else applyIncome(transaction.amount)
-
-                        // Marcar la transacción como resuelta
-                        repository.markTransactionAsSolved(userId, transaction.id)
-                    }
-                }
-            } catch (e: Exception) {
-                _error.value = "Error al verificar transacciones pendientes: ${e.message}"
-            }
-        }
+    sealed class NavigationCommand {
+        data class NavigateTo(val route: String) : NavigationCommand()
+        object PopBackStack : NavigationCommand()
     }
 }
