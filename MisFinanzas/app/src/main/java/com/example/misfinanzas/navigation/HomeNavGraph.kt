@@ -42,7 +42,7 @@ fun HomeNavGraph(
             )
         }
         composable(HomeScreens.Suscriptions.route) {
-            SubscriptionsView()
+            SubscriptionsView(viewModel = homeViewModel)
         }
         composable(HomeScreens.Add.route) {
             AddView(firstTime = false, viewModel = homeViewModel ,navController = navController)

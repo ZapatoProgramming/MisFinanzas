@@ -36,7 +36,6 @@ fun AddView(
     navController: NavController
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var firstTransactionAdded = viewModel.hasAddedFirstTransaction
 
     val buttonColor = when (viewModel.tipoTransaccion) {
         "Ingreso" -> MaterialTheme.colorScheme.primary
@@ -236,7 +235,6 @@ fun AddView(
                 Button(
                     onClick = {
                         navController.navigate(HomeScreens.Dashboard.route)
-                        if(!firstTransactionAdded) viewModel.markFirstTransactionAdded()
                         val userId = FirebaseAuth.getInstance().currentUser?.uid
                         if (userId != null) {
                             viewModel.createTransaction(userId)

@@ -12,4 +12,10 @@ object GlobalDatabase {
     // Proporciona acceso al DAO
     val transactionDao: TransactionDao
         get() = appDatabase.transactionDao()
+
+    val balanceDao: BalanceDao
+        get() = appDatabase.balanceDao()
+
+    val subscriptionDao: SubscriptionDao
+        get() = appDatabase.subscriptionDao()
 }

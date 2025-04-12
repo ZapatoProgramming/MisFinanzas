@@ -8,31 +8,29 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.misfinanzas.models.AddModel
-import com.example.misfinanzas.models.Balance
 import com.example.misfinanzas.models.DashboardModel
-import com.example.misfinanzas.models.Subscription
-import com.example.misfinanzas.models.Transaction
 import com.example.misfinanzas.repositories.TransactionRepository
 import com.example.misfinanzas.models.UserData
 import com.example.misfinanzas.repositories.RoomRepository
-import com.example.misfinanzas.room.GlobalDatabase
+import com.example.misfinanzas.room.BalanceEntity
+import com.example.misfinanzas.room.SubscriptionEntity
+import com.example.misfinanzas.room.TransactionEntity
 import com.example.misfinanzas.views.HomeScreens
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.util.Date
+import java.util.UUID
 
 class HomeViewModel(
     private val repository: TransactionRepository = TransactionRepository()
 ): ViewModel(){
 
-    val transactionDao = GlobalDatabase.transactionDao
-    val roomRepository = RoomRepository(transactionDao)
-
+    val roomRepository = RoomRepository()
 
     // State
     private val _userData = MutableStateFlow<UserData?>(null)
@@ -90,6 +88,11 @@ class HomeViewModel(
         viewModelScope.launch { _navigationCommands.emit(NavigationCommand.NavigateTo(route)) }
     }
 
+    sealed class NavigationCommand {
+        data class NavigateTo(val route: String) : NavigationCommand()
+        object PopBackStack : NavigationCommand()
+    }
+
     fun navigateToPreviousMonth() {
         if (currentIndex > 0) {
             currentIndex--
@@ -128,7 +131,12 @@ class HomeViewModel(
         esSubscripcion = value
     }
 
-    // Core transaction logic
+
+    fun getAllSubscriptions(): Flow<List<SubscriptionEntity>> {
+        return roomRepository.getAllSubscriptions(getCurrentUserId().toString())
+    }
+
+
     fun createTransaction(userId: String) = viewModelScope.launch {
         _isLoading.value = true
         try {
@@ -141,7 +149,12 @@ class HomeViewModel(
                 saveTransaction(userId, amount, date)
             }
 
-            if (!hasAddedFirstTransaction) markFirstTransactionAdded()
+            if (!hasAddedFirstTransaction) {
+                markFirstTransactionAdded()
+                repository.updateUserField(userId,
+                    "has_added_first_transaction",
+                    true)
+            }
             resetTransactionInputs()
         } catch (e: Exception) {
             _error.value = e.message ?: "Error inesperado"
@@ -151,38 +164,46 @@ class HomeViewModel(
     }
 
     private suspend fun saveSubscription(userId: String, amount: Double, date: Date) {
-        val sub = Subscription(
+        // Crear el objeto Subscription
+        val subscriptionEntity = SubscriptionEntity(
+            id = UUID.randomUUID().toString(),
+            userId = userId,
             type = tipoTransaccion,
             amount = amount,
             category = categoria,
             start_date = date,
             frequency = frecuenciaSubscripcion,
             next_payment_date = repository.calculateNextPaymentDate(date, frecuenciaSubscripcion),
-            created_at = FieldValue.serverTimestamp()
+            created_at = Date()
         )
-        if (!repository.uploadSubscription(userId, sub)) {
-            _error.value = "Error al guardar la suscripción."
+
+        // Aplicar el gasto o ingreso si la fecha no está en el futuro
+        if (!repository.isDateInFuture(date)) {
+            if (subscriptionEntity.type == "Gasto") applyExpense(amount) else applyIncome(amount)
         }
+
+        // Guardar la suscripción en la base de datos
+        roomRepository.insertSubscription(subscriptionEntity)
     }
 
     private suspend fun saveTransaction(userId: String, amount: Double, date: Date) {
-        val transaction = Transaction(
+
+        val transactionEntity = TransactionEntity(
+            id = UUID.randomUUID().toString(),
+            userId = userId,
             type = tipoTransaccion,
             amount = amount,
             category = categoria,
             date = date,
-            created_at = FieldValue.serverTimestamp(),
-            solved = false
+            created_at = Date(),
         )
 
         if (!repository.isDateInFuture(date)) {
-            if (transaction.type == "Gasto") applyExpense(amount) else applyIncome(amount)
-            transaction.solved = true
+            if (transactionEntity.type == "Gasto") applyExpense(amount) else applyIncome(amount)
+            transactionEntity.solved = true
         }
 
-        if (!repository.uploadTransaction(userId, transaction)) {
-            _error.value = "Error al guardar la transacción."
-        }
+        roomRepository.insertTransaction(transactionEntity)
     }
 
     private fun resetTransactionInputs() {
@@ -214,9 +235,14 @@ class HomeViewModel(
                 }
             }
 
-            if (!repository.updateBalance(userId, newBalance)) {
-                _error.value = "Error al guardar el saldo."
-            }
+            val bal = BalanceEntity(
+                userId = userId,
+                current_balance = balance,
+                synced = false
+            )
+
+            roomRepository.insertBalance(bal)
+
 
         } catch (e: Exception) {
             _error.value = "Error inesperado: ${e.message}"
@@ -247,24 +273,21 @@ class HomeViewModel(
     }
 
     fun fetchBalance(userId: String) = viewModelScope.launch {
-        _isLoading.value = true
         try {
-            updateBalanceState(repository.fetchBalance(userId))
+            // Obtener el saldo desde la base de datos
+            val balanceEntity = roomRepository.getBalanceByUserId(userId)
+            // Actualizar el estado del balance
+            updateBalanceState(balanceEntity)
         } catch (e: Exception) {
+            // Manejar errores
             _error.value = "Error al cargar el saldo: ${e.message}"
-        } finally {
-            _isLoading.value = false
         }
     }
 
-    private fun updateBalanceState(data: Balance?) {
-        balance = data?.current_balance ?: 0.0
+    private fun updateBalanceState(balanceEntity: BalanceEntity?) {
+        balance = balanceEntity?.current_balance ?: 0.0
     }
 
     private fun getCurrentUserId(): String? = FirebaseAuth.getInstance().currentUser?.uid
 
-    sealed class NavigationCommand {
-        data class NavigateTo(val route: String) : NavigationCommand()
-        object PopBackStack : NavigationCommand()
-    }
 }
