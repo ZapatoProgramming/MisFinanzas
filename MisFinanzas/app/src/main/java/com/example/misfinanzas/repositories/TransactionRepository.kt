@@ -4,6 +4,9 @@ import com.example.misfinanzas.models.Balance
 import com.example.misfinanzas.models.Subscription
 import com.example.misfinanzas.models.Transaction
 import com.example.misfinanzas.models.UserData
+import com.example.misfinanzas.room.BalanceEntity
+import com.example.misfinanzas.room.SubscriptionEntity
+import com.example.misfinanzas.room.TransactionEntity
 import com.example.misfinanzas.utils.FirestoreUtils
 import java.util.Calendar
 import java.util.Date
@@ -12,29 +15,30 @@ import java.util.UUID
 class TransactionRepository {
 
     // Subir una transacción a Firestore
-    suspend fun uploadTransaction(userId: String, transaction: Transaction): Boolean {
-        val transactionWithId = transaction.copy(id = UUID.randomUUID().toString())
+    suspend fun uploadTransaction(userId: String, transactionEntity: TransactionEntity): Boolean {
+        val transaction = entityToDocument(transactionEntity)
+        if(transaction == null) return false
         return FirestoreUtils.uploadDocument(
             collectionName = "User/$userId/Transactions",
-            documentId = transactionWithId.id,
-            data = transactionWithId
+            documentId = transactionEntity.id,
+            data = transaction
         )
     }
 
     // Subir una suscripción a Firestore
-    suspend fun uploadSubscription(userId: String, subscription: Subscription): Boolean {
-        val subscriptionWithId = subscription.copy(id = UUID.randomUUID().toString())
+    suspend fun uploadSubscription(userId: String, subscriptionEntity: SubscriptionEntity): Boolean {
+        val subscription = entityToDocument(subscriptionEntity)
+        if(subscription == null) return false
         return FirestoreUtils.uploadDocument(
             collectionName = "User/$userId/Subscriptions",
-            documentId = subscriptionWithId.id,
-            data = subscriptionWithId
+            documentId = subscriptionEntity.id,
+            data = subscription
         )
     }
 
     // Actualizar el saldo en Firestore
-    suspend fun updateBalance(userId: String, newBalance: Double): Boolean {
-        val balanceData = Balance(current_balance = newBalance)
-        return FirestoreUtils.uploadDocument("Balance", userId, balanceData)
+    suspend fun updateBalance(userId: String, newBalance: Balance): Boolean {
+        return FirestoreUtils.uploadDocument("Balance", userId, newBalance)
     }
 
     // Actualizar un campo específico en Firestore
@@ -48,7 +52,7 @@ class TransactionRepository {
     }
 
     // Obtener el saldo del usuario desde Firestore
-    suspend fun fetchBalance(userId: String): Balance? {
+    suspend fun fetchBalanceFromFirestore(userId: String): Balance? {
         return FirestoreUtils.fetchDocumentAs<Balance>("Balance", userId)
     }
 
@@ -88,5 +92,41 @@ class TransactionRepository {
     fun isDateInFuture(date: Date): Boolean {
         val currentDate = Calendar.getInstance().time
         return date.after(currentDate)
+    }
+
+    fun entityToDocument(entity: Any) : Any?{
+        return when(entity){
+            is TransactionEntity -> {
+                Transaction(
+                    id = entity.id,
+                    type = entity.type,
+                    amount = entity.amount,
+                    category = entity.category,
+                    date = entity.date,
+                    created_at = entity.created_at,
+                    solved = entity.solved
+                )
+            }
+            is SubscriptionEntity -> {
+                Subscription(
+                    id = entity.id,
+                    type = entity.type,
+                    amount = entity.amount,
+                    category = entity.category,
+                    start_date = entity.start_date,
+                    frequency = entity.frequency,
+                    next_payment_date = entity.next_payment_date,
+                    created_at = entity.created_at
+                )
+            }
+            is BalanceEntity -> {
+                Balance(
+                    current_balance = entity.current_balance,
+                    last_updated = entity.last_updated
+                )
+            }
+            else -> throw IllegalArgumentException("Entidad no existe")
+        }
+
     }
 }

@@ -33,7 +33,7 @@ import com.google.firebase.auth.FirebaseAuth
 sealed class HomeScreens(val route: String, val title: String, val icon: ImageVector? = null) {
     object Dashboard : HomeScreens("dashboard", "Dashboard", Icons.Default.BarChart)
     object Tips : HomeScreens("tips", "Tips", Icons.Default.Lightbulb)
-    object Suscriptions : HomeScreens("sucriptions", "Suscriptions", Icons.Default.Notifications)
+    object Subscriptions : HomeScreens("subscriptions", "Subscriptions", Icons.Default.Notifications)
     object Profile : HomeScreens("profile", "Profile", Icons.Default.Person)
     object Add : HomeScreens("add", "Add")
     object AddFirst : HomeScreens("addFirst", "Add")
@@ -63,7 +63,7 @@ fun HomeView(viewModel: HomeViewModel = viewModel()) {
     LaunchedEffect(userId) {
         if (userId != null) {
             viewModel.fetchUserData(userId)
-            viewModel.fetchBalance(userId)
+            viewModel.checkData()
         }
     }
 
@@ -97,7 +97,7 @@ fun CustomBottomNavigationBar(
         HomeScreens.Dashboard,
         HomeScreens.Tips,
         HomeScreens.Add,
-        HomeScreens.Suscriptions,
+        HomeScreens.Subscriptions,
         HomeScreens.Profile
     )
 

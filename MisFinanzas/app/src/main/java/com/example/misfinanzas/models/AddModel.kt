@@ -1,6 +1,5 @@
 package com.example.misfinanzas.models
 
-import com.google.firebase.firestore.FieldValue
 import java.util.Calendar
 import java.util.Date
 
@@ -20,7 +19,7 @@ data class Transaction(
     val amount: Double = 0.0,
     val category: String = "",
     val date: Date? = null,
-    val created_at: Any? = FieldValue.serverTimestamp(),
+    val created_at: Date? = null,
     var solved: Boolean = false
 )
 
@@ -32,6 +31,5 @@ data class Subscription(
     val start_date: Date? = null,
     val frequency: String = "",
     val next_payment_date: Date? = null,
-    val created_at: Any? = FieldValue.serverTimestamp(),
-    val solved: Boolean = false
+    val created_at: Date? = null
 )

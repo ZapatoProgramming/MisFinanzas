@@ -15,7 +15,6 @@ object FirestoreUtils {
                 .document(documentId)
                 .get()
                 .await()
-
             if (document.exists()) {
                 document.toObject(T::class.java)
             } else {

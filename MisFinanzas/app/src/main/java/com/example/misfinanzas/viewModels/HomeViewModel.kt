@@ -1,5 +1,6 @@
 package com.example.misfinanzas.viewModels
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -8,7 +9,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.misfinanzas.models.AddModel
+import com.example.misfinanzas.models.Balance
 import com.example.misfinanzas.models.DashboardModel
+import com.example.misfinanzas.models.Subscription
+import com.example.misfinanzas.models.Transaction
 import com.example.misfinanzas.repositories.TransactionRepository
 import com.example.misfinanzas.models.UserData
 import com.example.misfinanzas.repositories.RoomRepository
@@ -22,14 +26,14 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
 
-class HomeViewModel(
-    private val repository: TransactionRepository = TransactionRepository()
-): ViewModel(){
+class HomeViewModel(): ViewModel(){
 
+    val repository = TransactionRepository()
     val roomRepository = RoomRepository()
 
     // State
@@ -131,14 +135,61 @@ class HomeViewModel(
         esSubscripcion = value
     }
 
-
     fun getAllSubscriptions(): Flow<List<SubscriptionEntity>> {
         return roomRepository.getAllSubscriptions(getCurrentUserId().toString())
     }
 
+    fun checkData() = viewModelScope.launch {
+        val userId = getCurrentUserId().toString()
+        syncBalance(userId)
+        syncLocalTransactionsToFirebase(userId)
+    }
+
+    fun syncBalance(userId: String) = viewModelScope.launch {
+        val localBalance = roomRepository.getBalanceByUserId(userId)
+        val firebaseBalance = repository.fetchBalanceFromFirestore(userId)
+
+        if(localBalance == null && firebaseBalance == null) return@launch
+        if(localBalance == null && firebaseBalance != null){
+            updateBalance(firebaseBalance.current_balance)
+        }
+        if(localBalance != null && firebaseBalance == null){
+            balance = localBalance.current_balance
+            syncLocalBalanceToFirebase(userId, localBalance)
+        }
+        if(localBalance != null && firebaseBalance != null){
+            if(localBalance.last_updated.after(firebaseBalance.last_updated)){
+                balance = localBalance.current_balance
+                syncLocalBalanceToFirebase(userId,localBalance)
+            }else{
+                updateBalance(firebaseBalance.current_balance)
+            }
+        }
+    }
+
+    private suspend fun syncLocalBalanceToFirebase(userId: String, balanceEntity: BalanceEntity) {
+        val balance = repository.entityToDocument(balanceEntity) as Balance
+        repository.updateBalance(userId,balance)
+    }
+
+    private fun syncLocalTransactionsToFirebase(userId: String) = viewModelScope.launch{
+        val transactionsEntities: List<TransactionEntity> = roomRepository.getUnsyncedTransactions(userId)
+        transactionsEntities.forEach { transactionEntity ->
+            val success = repository.uploadTransaction(userId, transactionEntity)
+            if (success) markTransactionAsSynced(transactionEntity.id)
+        }
+    }
+
+    private suspend fun syncSubscriptionsToFirebase(userId: String) = viewModelScope.launch {
+        val subscriptionsEntities: List<SubscriptionEntity> = roomRepository.getUnsyncedSubscriptions(userId)
+        val subscriptionsDocuments: List<Subscription> = subscriptionsEntities
+            .map { repository.entityToDocument(it) as Subscription }
+        subscriptionsDocuments.forEach { subscription ->
+            repository.uploadSubscription(userId, subscription)
+        }
+    }
 
     fun createTransaction(userId: String) = viewModelScope.launch {
-        _isLoading.value = true
         try {
             val amount = repository.validateAmount(cantidad)
             val date = repository.getTransactionDate(esHoy, dia, mes, anio)
@@ -158,8 +209,6 @@ class HomeViewModel(
             resetTransactionInputs()
         } catch (e: Exception) {
             _error.value = e.message ?: "Error inesperado"
-        } finally {
-            _isLoading.value = false
         }
     }
 
@@ -206,6 +255,10 @@ class HomeViewModel(
         roomRepository.insertTransaction(transactionEntity)
     }
 
+    fun markTransactionAsSynced(transactionId: String) = viewModelScope.launch{
+        roomRepository.markTransactionAsSynced(transactionId)
+    }
+
     private fun resetTransactionInputs() {
         cantidad = ""
         categoria = ""
@@ -238,11 +291,11 @@ class HomeViewModel(
             val bal = BalanceEntity(
                 userId = userId,
                 current_balance = balance,
-                synced = false
+                last_updated = Date()
             )
 
             roomRepository.insertBalance(bal)
-
+            syncLocalBalanceToFirebase(userId, bal)
 
         } catch (e: Exception) {
             _error.value = "Error inesperado: ${e.message}"
@@ -270,22 +323,6 @@ class HomeViewModel(
             hasEnteredBalance = it.has_entered_balance
             hasAddedFirstTransaction = it.has_added_first_transaction
         }
-    }
-
-    fun fetchBalance(userId: String) = viewModelScope.launch {
-        try {
-            // Obtener el saldo desde la base de datos
-            val balanceEntity = roomRepository.getBalanceByUserId(userId)
-            // Actualizar el estado del balance
-            updateBalanceState(balanceEntity)
-        } catch (e: Exception) {
-            // Manejar errores
-            _error.value = "Error al cargar el saldo: ${e.message}"
-        }
-    }
-
-    private fun updateBalanceState(balanceEntity: BalanceEntity?) {
-        balance = balanceEntity?.current_balance ?: 0.0
     }
 
     private fun getCurrentUserId(): String? = FirebaseAuth.getInstance().currentUser?.uid

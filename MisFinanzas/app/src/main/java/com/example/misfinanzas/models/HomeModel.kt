@@ -14,6 +14,7 @@ data class UserData(
 )
 
 data class Balance(
-    val current_balance: Double = 0.0
+    val current_balance: Double = 0.0,
+    val last_updated: Date = Date()
 )
 

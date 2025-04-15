@@ -35,5 +35,5 @@ data class SubscriptionEntity(
 data class BalanceEntity(
     @PrimaryKey val userId: String = "",
     val current_balance: Double = 0.0,
-    var synced: Boolean = false
+    val last_updated: Date = Date()
 )

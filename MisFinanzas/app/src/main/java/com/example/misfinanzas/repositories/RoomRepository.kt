@@ -1,5 +1,6 @@
 package com.example.misfinanzas.repositories
 
+import com.example.misfinanzas.models.Transaction
 import com.example.misfinanzas.room.BalanceEntity
 import com.example.misfinanzas.room.GlobalDatabase
 import com.example.misfinanzas.room.SubscriptionEntity
@@ -39,6 +40,14 @@ class RoomRepository @Inject constructor() {
         return transactionDao.getAllTransactions(userId)
     }
 
+    suspend fun getUnsyncedTransactions(userId: String) : List<TransactionEntity>{
+        return transactionDao.getUnsyncedTransactions(userId)
+    }
+
+    suspend fun markTransactionAsSynced(transactionId: String){
+        transactionDao.markTransactionAsSynced(transactionId)
+    }
+
     suspend fun deleteTransactions(){
         transactionDao.deleteAllTransactions()
     }
@@ -50,4 +59,9 @@ class RoomRepository @Inject constructor() {
     fun getAllSubscriptions(userId: String): Flow<List<SubscriptionEntity>> {
         return subscriptionDao.getAllSubscriptions(userId)
     }
+
+    suspend fun getUnsyncedSubscriptions(userId: String) : List<SubscriptionEntity>{
+        return subscriptionDao.getUnsyncedSubscriptions(userId)
+    }
+
 }
