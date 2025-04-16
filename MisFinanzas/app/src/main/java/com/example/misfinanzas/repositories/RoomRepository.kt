@@ -1,6 +1,5 @@
 package com.example.misfinanzas.repositories
 
-import com.example.misfinanzas.models.Transaction
 import com.example.misfinanzas.room.BalanceEntity
 import com.example.misfinanzas.room.GlobalDatabase
 import com.example.misfinanzas.room.SubscriptionEntity
@@ -10,9 +9,9 @@ import javax.inject.Inject
 
 class RoomRepository @Inject constructor() {
 
-    val transactionDao = GlobalDatabase.transactionDao
-    val balanceDao = GlobalDatabase.balanceDao
-    val subscriptionDao = GlobalDatabase.subscriptionDao
+    private val transactionDao = GlobalDatabase.transactionDao
+    private val balanceDao = GlobalDatabase.balanceDao
+    private val subscriptionDao = GlobalDatabase.subscriptionDao
 
     suspend fun insertBalance(balance: BalanceEntity) {
         balanceDao.insertBalance(balance)
@@ -22,22 +21,8 @@ class RoomRepository @Inject constructor() {
         return balanceDao.getBalanceByUserId(userId)
     }
 
-    fun getBalances(): Flow<List<BalanceEntity>>{
-        return balanceDao.getBalances()
-    }
-
-    suspend fun updateBalance(userId: String, newBalance: Double) {
-        balanceDao.updateBalance(userId, newBalance)
-    }
-
-    // Insert a transaction
     suspend fun insertTransaction(transaction: TransactionEntity) {
         transactionDao.insertTransaction(transaction)
-    }
-
-    // Get all transactions
-    fun getAllTransactions(userId: String): Flow<List<TransactionEntity>> {
-        return transactionDao.getAllTransactions(userId)
     }
 
     suspend fun getUnsyncedTransactions(userId: String) : List<TransactionEntity>{
@@ -46,10 +31,6 @@ class RoomRepository @Inject constructor() {
 
     suspend fun markTransactionAsSynced(transactionId: String){
         transactionDao.markTransactionAsSynced(transactionId)
-    }
-
-    suspend fun deleteTransactions(){
-        transactionDao.deleteAllTransactions()
     }
 
     suspend fun insertSubscription(subscriptionEntity: SubscriptionEntity){

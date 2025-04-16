@@ -16,7 +16,7 @@ class FirebaseAuthService: ViewModel() {
 
     private val auth: FirebaseAuth = Firebase.auth
 
-    private val _currentUser = MutableStateFlow<FirebaseUser?>(auth.currentUser)
+    private val _currentUser = MutableStateFlow(auth.currentUser)
     val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
 
     init {
@@ -47,7 +47,4 @@ class FirebaseAuthService: ViewModel() {
         }
     }
 
-    fun signOut(){
-        auth.signOut()
-    }
 }

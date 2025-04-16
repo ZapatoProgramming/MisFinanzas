@@ -30,10 +30,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.misfinanzas.viewModels.HomeViewModel
+import com.example.misfinanzas.viewModels.DashboardViewModel
+import com.example.misfinanzas.viewModels.SharedViewModel
 
 @Composable
-fun DashboardView(viewModel: HomeViewModel, navController: NavController) {
+fun DashboardView(viewModel: SharedViewModel, navController: NavController,
+                  dashboardViewModel: DashboardViewModel = viewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -43,11 +45,11 @@ fun DashboardView(viewModel: HomeViewModel, navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { viewModel.navigateToPreviousMonth() }) {
+            IconButton(onClick = { dashboardViewModel.navigateToPreviousMonth() }) {
                 Text("◀", color = Color.White, fontSize = 20.sp)
             }
-            Text(viewModel.selectedMonth, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            IconButton(onClick = { viewModel.navigateToNextMonth() }) {
+            Text(dashboardViewModel.selectedMonth, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            IconButton(onClick = { dashboardViewModel.navigateToNextMonth() }) {
                 Text("▶", color = Color.White, fontSize = 20.sp)
             }
         }
@@ -131,7 +133,7 @@ fun DashboardView(viewModel: HomeViewModel, navController: NavController) {
 }
 
 @Composable
-fun EnterBalanceView(viewModel: HomeViewModel = viewModel(), navController: NavController) {
+fun EnterBalanceView(viewModel: SharedViewModel = viewModel(), navController: NavController) {
     var balance by remember { mutableStateOf("") }
 
     Surface(

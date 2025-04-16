@@ -2,11 +2,11 @@ package com.example.misfinanzas.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.misfinanzas.viewModels.HomeViewModel
+import com.example.misfinanzas.viewModels.SharedViewModel
 import com.example.misfinanzas.views.AddView
 import com.example.misfinanzas.views.DashboardView
 import com.example.misfinanzas.views.EnterBalanceView
@@ -20,16 +20,17 @@ import com.google.firebase.auth.FirebaseAuth
 fun HomeNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    sharedViewModel: SharedViewModel
 ) {
-    val homeViewModel: HomeViewModel = viewModel()
+
     NavHost(
         navController = navController,
-        startDestination = viewModel.currentRoute,
+        startDestination = homeViewModel.currentRoute,
         modifier = modifier
     ) {
         composable(HomeScreens.Dashboard.route) {
-            DashboardView(viewModel = homeViewModel, navController = navController)
+            DashboardView(viewModel = sharedViewModel, navController = navController)
         }
         composable(HomeScreens.Tips.route) {
             TipsView()
@@ -42,16 +43,16 @@ fun HomeNavGraph(
             )
         }
         composable(HomeScreens.Subscriptions.route) {
-            SubscriptionsView(viewModel = homeViewModel)
+            SubscriptionsView()
         }
         composable(HomeScreens.Add.route) {
-            AddView(firstTime = false, viewModel = homeViewModel ,navController = navController)
+            AddView(firstTime = false, viewModel =  sharedViewModel, navController = navController)
         }
         composable(HomeScreens.AddFirst.route) {
-            AddView(firstTime = true, navController = navController, viewModel = homeViewModel)
+            AddView(firstTime = true, navController = navController, viewModel = sharedViewModel)
         }
         composable(HomeScreens.EnterBalance.route) {
-            EnterBalanceView(viewModel = homeViewModel, navController = navController)
+            EnterBalanceView(viewModel = sharedViewModel, navController = navController)
         }
     }
 }

@@ -28,16 +28,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.misfinanzas.navigation.HomeNavGraph
 import com.example.misfinanzas.viewModels.HomeViewModel
+import com.example.misfinanzas.viewModels.SharedViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 sealed class HomeScreens(val route: String, val title: String, val icon: ImageVector? = null) {
-    object Dashboard : HomeScreens("dashboard", "Dashboard", Icons.Default.BarChart)
-    object Tips : HomeScreens("tips", "Tips", Icons.Default.Lightbulb)
-    object Subscriptions : HomeScreens("subscriptions", "Subscriptions", Icons.Default.Notifications)
-    object Profile : HomeScreens("profile", "Profile", Icons.Default.Person)
-    object Add : HomeScreens("add", "Add")
-    object AddFirst : HomeScreens("addFirst", "Add")
-    object EnterBalance : HomeScreens("enterBalance", "Enter Balance")
+    data object Dashboard : HomeScreens("dashboard", "Dashboard", Icons.Default.BarChart)
+    data object Tips : HomeScreens("tips", "Tips", Icons.Default.Lightbulb)
+    data object Subscriptions : HomeScreens("subscriptions", "Subscriptions", Icons.Default.Notifications)
+    data object Profile : HomeScreens("profile", "Profile", Icons.Default.Person)
+    data object Add : HomeScreens("add", "Add")
+    data object AddFirst : HomeScreens("addFirst", "Add")
+    data object EnterBalance : HomeScreens("enterBalance", "Enter Balance")
 }
 
 @Composable
@@ -57,13 +58,14 @@ fun HomeView(viewModel: HomeViewModel = viewModel()) {
         }
     }
 
+    val sharedViewModel : SharedViewModel = viewModel()
     val userId = FirebaseAuth.getInstance().currentUser?.uid
-    val isLoading by viewModel.isLoading.collectAsState()
+    val isLoading by sharedViewModel.isLoading.collectAsState()
 
     LaunchedEffect(userId) {
         if (userId != null) {
-            viewModel.fetchUserData(userId)
-            viewModel.checkData()
+            sharedViewModel.fetchUserData(userId)
+            sharedViewModel.checkData()
         }
     }
 
@@ -82,7 +84,8 @@ fun HomeView(viewModel: HomeViewModel = viewModel()) {
                 HomeNavGraph(
                     navController = navController,
                     modifier = Modifier.fillMaxSize(),
-                    viewModel = viewModel
+                    homeViewModel = viewModel,
+                    sharedViewModel = sharedViewModel
                 )
             }
         }

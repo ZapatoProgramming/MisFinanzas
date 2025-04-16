@@ -10,14 +10,10 @@ import com.example.misfinanzas.room.TransactionEntity
 import com.example.misfinanzas.utils.FirestoreUtils
 import java.util.Calendar
 import java.util.Date
-import java.util.UUID
 
 class TransactionRepository {
-
-    // Subir una transacción a Firestore
     suspend fun uploadTransaction(userId: String, transactionEntity: TransactionEntity): Boolean {
         val transaction = entityToDocument(transactionEntity)
-        if(transaction == null) return false
         return FirestoreUtils.uploadDocument(
             collectionName = "User/$userId/Transactions",
             documentId = transactionEntity.id,
@@ -25,10 +21,8 @@ class TransactionRepository {
         )
     }
 
-    // Subir una suscripción a Firestore
     suspend fun uploadSubscription(userId: String, subscriptionEntity: SubscriptionEntity): Boolean {
         val subscription = entityToDocument(subscriptionEntity)
-        if(subscription == null) return false
         return FirestoreUtils.uploadDocument(
             collectionName = "User/$userId/Subscriptions",
             documentId = subscriptionEntity.id,
@@ -36,27 +30,22 @@ class TransactionRepository {
         )
     }
 
-    // Actualizar el saldo en Firestore
     suspend fun updateBalance(userId: String, newBalance: Balance): Boolean {
         return FirestoreUtils.uploadDocument("Balance", userId, newBalance)
     }
 
-    // Actualizar un campo específico en Firestore
     suspend fun updateUserField(userId: String, fieldName: String, fieldValue: Any): Boolean {
         return FirestoreUtils.updateField("User", userId, fieldName, fieldValue)
     }
 
-    // Obtener datos del usuario desde Firestore
     suspend fun fetchUserData(userId: String): UserData? {
         return FirestoreUtils.fetchDocumentAs<UserData>("User", userId)
     }
 
-    // Obtener el saldo del usuario desde Firestore
     suspend fun fetchBalanceFromFirestore(userId: String): Balance? {
         return FirestoreUtils.fetchDocumentAs<Balance>("Balance", userId)
     }
 
-    // Calcular la próxima fecha de pago
     fun calculateNextPaymentDate(startDate: Date, frequency: String): Date {
         val calendar = Calendar.getInstance().apply { time = startDate }
         when (frequency) {
@@ -66,7 +55,6 @@ class TransactionRepository {
         return calendar.time
     }
 
-    // Validar la cantidad de una transacción
     fun validateAmount(amount: String): Double {
         val parsedAmount = amount.toDoubleOrNull() ?: 0.0
         if (parsedAmount <= 0) {
@@ -75,7 +63,6 @@ class TransactionRepository {
         return parsedAmount
     }
 
-    // Obtener la fecha de una transacción
     fun getTransactionDate(isToday: Boolean, day: String, month: String, year: String): Date {
         return if (isToday) {
             Calendar.getInstance().time
@@ -94,7 +81,7 @@ class TransactionRepository {
         return date.after(currentDate)
     }
 
-    fun entityToDocument(entity: Any) : Any?{
+    fun entityToDocument(entity: Any) : Any {
         return when(entity){
             is TransactionEntity -> {
                 Transaction(

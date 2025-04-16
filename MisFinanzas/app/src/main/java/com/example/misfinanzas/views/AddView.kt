@@ -26,18 +26,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
-import com.example.misfinanzas.viewModels.HomeViewModel
+import com.example.misfinanzas.repositories.TransactionRepository
+import com.example.misfinanzas.viewModels.AddViewModel
+import com.example.misfinanzas.viewModels.SharedViewModel
 import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun AddView(
-    viewModel: HomeViewModel,
+    viewModel: SharedViewModel,
     firstTime: Boolean = false,
-    navController: NavController
+    navController: NavController,
+    addViewModel: AddViewModel = viewModel()
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var typeMenuExpanded by remember { mutableStateOf(false) }
+    var frequencyMenuExpanded by remember { mutableStateOf(false) }
 
-    val buttonColor = when (viewModel.tipoTransaccion) {
+
+    val buttonColor = when (addViewModel.transactionType) {
         "Ingreso" -> MaterialTheme.colorScheme.primary
         "Gasto" -> Color.Red
         else -> Color.Gray
@@ -83,23 +89,23 @@ fun AddView(
             )
             Box(modifier = Modifier.fillMaxWidth()) {
                 Button(
-                    onClick = { expanded = true },
+                    onClick = { typeMenuExpanded = true },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = buttonColor) // Color dinámico
+                    colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
                 ) {
-                    Text(viewModel.tipoTransaccion, color = Color.White)
+                    Text(addViewModel.transactionType, color = Color.White)
                 }
                 DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
+                    expanded = typeMenuExpanded,
+                    onDismissRequest = { typeMenuExpanded = false },
                     modifier = Modifier.fillMaxWidth().background(Color.White)
                 ) {
                     listOf("Gasto", "Ingreso").forEach { opcion ->
                         DropdownMenuItem(
-                            text = { Text(opcion) },
+                            text = { Text(opcion, color = Color.Black) },
                             onClick = {
-                                viewModel.updateTipoTransaccion(opcion)
-                                expanded = false
+                                addViewModel.updateTransactionType(opcion)
+                                typeMenuExpanded = false
                             }
                         )
                     }
@@ -107,9 +113,8 @@ fun AddView(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Título dinámico según el tipo de transacción
             Text(
-                text = "Ingresar ${viewModel.tipoTransaccion}",
+                text = "Ingresar ${addViewModel.transactionType}",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFF8F8F2)
@@ -117,16 +122,16 @@ fun AddView(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
-                value = viewModel.cantidad,
-                onValueChange = { viewModel.updateCantidad(it) },
+                value = addViewModel.amount,
+                onValueChange = { addViewModel.updateAmount(it) },
                 label = { Text("Cantidad") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             TextField(
-                value = viewModel.categoria,
-                onValueChange = { viewModel.updateCategoria(it) },
+                value = addViewModel.category,
+                onValueChange = { addViewModel.updateCategory(it) },
                 label = { Text("Categoría") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -135,8 +140,8 @@ fun AddView(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("¿Es de hoy?", color = Color.White)
                 Checkbox(
-                    checked = viewModel.esHoy,
-                    onCheckedChange = { viewModel.toggleEsHoy(it) },
+                    checked = addViewModel.isToday,
+                    onCheckedChange = { addViewModel.toggleIsToday(it) },
                     colors = CheckboxDefaults.colors(checkedColor = Color(0xFF10B981))
                 )
             }
@@ -147,26 +152,26 @@ fun AddView(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 TextField(
-                    value = viewModel.dia,
-                    onValueChange = { if (!viewModel.esHoy) viewModel.dia = it },
+                    value = addViewModel.day,
+                    onValueChange = { if (!addViewModel.isToday) addViewModel.day = it },
                     label = { Text("Día") },
-                    enabled = !viewModel.esHoy,
+                    enabled = !addViewModel.isToday,
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 TextField(
-                    value = viewModel.mes,
-                    onValueChange = { if (!viewModel.esHoy) viewModel.mes = it },
+                    value = addViewModel.month,
+                    onValueChange = { if (!addViewModel.isToday) addViewModel.month = it },
                     label = { Text("Mes") },
-                    enabled = !viewModel.esHoy,
+                    enabled = !addViewModel.isToday,
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 TextField(
-                    value = viewModel.anio,
-                    onValueChange = { if (!viewModel.esHoy) viewModel.anio = it },
+                    value = addViewModel.year,
+                    onValueChange = { if (!addViewModel.isToday) addViewModel.year = it },
                     label = { Text("Año") },
-                    enabled = !viewModel.esHoy,
+                    enabled = !addViewModel.isToday,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -175,34 +180,34 @@ fun AddView(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("¿Es una suscripción?", color = Color.White)
                 Checkbox(
-                    checked = viewModel.esSubscripcion,
-                    onCheckedChange = { viewModel.toggleEsSubscripcion(it) },
+                    checked = addViewModel.isSubscription,
+                    onCheckedChange = { addViewModel.toggleIsSubscription(it) },
                     colors = CheckboxDefaults.colors(checkedColor = Color(0xFF10B981))
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (viewModel.esSubscripcion) {
+            if (addViewModel.isSubscription) {
                 Text("Frecuencia de suscripción", color = Color.White)
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Button(
-                        onClick = { expanded = true },
+                        onClick = { frequencyMenuExpanded = true },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
                     ) {
-                        Text(viewModel.frecuenciaSubscripcion, color = Color.White)
+                        Text(addViewModel.subscriptionFrequency, color = Color.White)
                     }
                     DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
+                        expanded = frequencyMenuExpanded,
+                        onDismissRequest = { frequencyMenuExpanded = false },
                         modifier = Modifier.fillMaxWidth().background(Color.White)
                     ) {
-                        viewModel.opcionesFrecuencia.forEach { opcion ->
+                        addViewModel.frequencyOptions.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(opcion) },
+                                text = { Text(option, color = Color.Black) },
                                 onClick = {
-                                    viewModel.updateFrecuenciaSubscripcion(opcion)
-                                    expanded = false
+                                    addViewModel.updateSubscriptionFrequency(option)
+                                    frequencyMenuExpanded = false
                                 }
                             )
                         }
@@ -237,7 +242,13 @@ fun AddView(
                         navController.navigate(HomeScreens.Dashboard.route)
                         val userId = FirebaseAuth.getInstance().currentUser?.uid
                         if (userId != null) {
-                            viewModel.createTransaction(userId)
+                            addViewModel.createTransaction(userId)
+                            val repository = TransactionRepository()
+                            val date = repository.getTransactionDate(addViewModel.isToday,
+                                addViewModel.day, addViewModel.month, addViewModel.year)
+                            viewModel.applyTransactionIfNeeded(addViewModel.transactionType,
+                                addViewModel.amount, date)
+                            viewModel.userHasAddedFirstTransaction(userId)
                             navController.navigate(HomeScreens.Dashboard.route)
                         }
                     },

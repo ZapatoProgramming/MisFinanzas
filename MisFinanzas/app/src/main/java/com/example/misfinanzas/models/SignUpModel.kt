@@ -1,7 +1,5 @@
 package com.example.misfinanzas.models
 
-import com.google.firebase.firestore.FieldValue
-
 data class SignUpModel (
     val email: String = "",
     val password: String = "",

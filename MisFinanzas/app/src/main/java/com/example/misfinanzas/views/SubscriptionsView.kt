@@ -13,10 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.misfinanzas.viewModels.HomeViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.misfinanzas.viewModels.SubscriptionsViewModel
 
 @Composable
-fun SubscriptionsView(viewModel: HomeViewModel) {
+fun SubscriptionsView(viewModel: SubscriptionsViewModel = viewModel()) {
     val subscriptions = viewModel.getAllSubscriptions().collectAsState(initial = emptyList())
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Lista de Transacciones", fontSize = 20.sp, fontWeight = FontWeight.Bold)
