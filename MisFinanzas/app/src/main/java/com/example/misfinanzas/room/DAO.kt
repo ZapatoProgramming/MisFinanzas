@@ -10,7 +10,7 @@ import java.util.Date
 @Dao
 interface TransactionDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transaction: TransactionEntity)
 
     @Query("SELECT * FROM transactions WHERE userId = :userId")

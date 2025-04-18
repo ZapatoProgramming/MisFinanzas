@@ -41,6 +41,10 @@ class RoomRepository @Inject constructor() {
         return subscriptionDao.getAllSubscriptions(userId)
     }
 
+    fun getAllTransactions(userId: String): Flow<List<TransactionEntity>> {
+        return transactionDao.getAllTransactions(userId)
+    }
+
     suspend fun getUnsyncedSubscriptions(userId: String) : List<SubscriptionEntity>{
         return subscriptionDao.getUnsyncedSubscriptions(userId)
     }

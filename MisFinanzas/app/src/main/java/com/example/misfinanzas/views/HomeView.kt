@@ -1,5 +1,9 @@
 package com.example.misfinanzas.views
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +43,7 @@ sealed class HomeScreens(val route: String, val title: String, val icon: ImageVe
     data object Add : HomeScreens("add", "Add")
     data object AddFirst : HomeScreens("addFirst", "Add")
     data object EnterBalance : HomeScreens("enterBalance", "Enter Balance")
+    data object CreateCategory : HomeScreens("createCategory", "Crear Categoria")
 }
 
 @Composable
@@ -69,18 +74,18 @@ fun HomeView(viewModel: HomeViewModel = viewModel()) {
         }
     }
 
-    Scaffold(
-        bottomBar = { CustomBottomNavigationBar( viewModel = viewModel) }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            if(isLoading){
-                SplashView()
-            }
-            else {
+    if (isLoading) SplashView()
+    AnimatedVisibility(visible = !isLoading,
+        enter = fadeIn(animationSpec = tween(1000)),
+        exit = fadeOut(animationSpec = tween(1000)) ) {
+        Scaffold(
+            bottomBar = { CustomBottomNavigationBar( viewModel = viewModel) }
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
                 HomeNavGraph(
                     navController = navController,
                     modifier = Modifier.fillMaxSize(),

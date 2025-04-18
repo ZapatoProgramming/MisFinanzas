@@ -1,6 +1,7 @@
 package com.example.misfinanzas.repositories
 
 import com.example.misfinanzas.models.Balance
+import com.example.misfinanzas.models.Category
 import com.example.misfinanzas.models.Subscription
 import com.example.misfinanzas.models.Transaction
 import com.example.misfinanzas.models.UserData
@@ -89,6 +90,7 @@ class TransactionRepository {
                     type = entity.type,
                     amount = entity.amount,
                     category = entity.category,
+                    description = entity.description,
                     date = entity.date,
                     created_at = entity.created_at,
                     solved = entity.solved
@@ -100,6 +102,7 @@ class TransactionRepository {
                     type = entity.type,
                     amount = entity.amount,
                     category = entity.category,
+                    description = entity.description,
                     start_date = entity.start_date,
                     frequency = entity.frequency,
                     next_payment_date = entity.next_payment_date,
@@ -114,6 +117,10 @@ class TransactionRepository {
             }
             else -> throw IllegalArgumentException("Entidad no existe")
         }
+    }
 
+    suspend fun fetchCategories(userId: String) : List<Category>? {
+        val collectionName = "User/${userId}/Categories"
+        return FirestoreUtils.fetchCollectionAs<Category>(collectionName)
     }
 }

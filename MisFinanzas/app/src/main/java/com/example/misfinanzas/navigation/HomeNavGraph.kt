@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.example.misfinanzas.viewModels.HomeViewModel
 import com.example.misfinanzas.viewModels.SharedViewModel
 import com.example.misfinanzas.views.AddView
+import com.example.misfinanzas.views.CreateCategoryView
 import com.example.misfinanzas.views.DashboardView
 import com.example.misfinanzas.views.EnterBalanceView
 import com.example.misfinanzas.views.HomeScreens
@@ -53,6 +54,9 @@ fun HomeNavGraph(
         }
         composable(HomeScreens.EnterBalance.route) {
             EnterBalanceView(viewModel = sharedViewModel, navController = navController)
+        }
+        composable(HomeScreens.CreateCategory.route){
+            CreateCategoryView(navController = navController)
         }
     }
 }

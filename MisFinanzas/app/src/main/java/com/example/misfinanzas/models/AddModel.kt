@@ -18,6 +18,7 @@ data class Transaction(
     val type: String = "",
     val amount: Double = 0.0,
     val category: String = "",
+    val description: String = "",
     val date: Date? = null,
     val created_at: Date? = null,
     var solved: Boolean = false
@@ -28,6 +29,7 @@ data class Subscription(
     val type: String = "",
     val amount: Double = 0.0,
     val category: String = "",
+    val description: String = "",
     val start_date: Date? = null,
     val frequency: String = "",
     val next_payment_date: Date? = null,

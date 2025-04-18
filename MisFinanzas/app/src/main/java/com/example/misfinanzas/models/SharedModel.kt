@@ -14,3 +14,10 @@ data class Balance(
     val last_updated: Date = Date()
 )
 
+data class Category(
+    val id: String = "",
+    val name: String = "",
+    val color: String = "",
+    val description: String = ""
+)
+

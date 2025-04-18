@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.misfinanzas.models.Balance
+import com.example.misfinanzas.models.Category
 import com.example.misfinanzas.models.UserData
 import com.example.misfinanzas.repositories.RoomRepository
 import com.example.misfinanzas.repositories.TransactionRepository
@@ -25,7 +26,7 @@ class SharedViewModel: ViewModel() {
     private val roomRepository = RoomRepository()
 
     private val _userData = MutableStateFlow<UserData?>(null)
-    private val _isLoading = MutableStateFlow(false)
+    private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
     private val _error = MutableStateFlow<String?>(null)
 
@@ -34,6 +35,9 @@ class SharedViewModel: ViewModel() {
         private set
     var hasAddedFirstTransaction by mutableStateOf(false)
         private set
+
+    val categoriesNamesState = MutableStateFlow<List<String>>(emptyList())
+    val categoriesState = MutableStateFlow<List<Category>>(emptyList())
 
     val message: String
         get() = when {
@@ -47,6 +51,7 @@ class SharedViewModel: ViewModel() {
         syncBalance(userId)
         syncLocalTransactionsToFirebase(userId)
         syncLocalSubscriptionsToFirebase(userId)
+        fetchCategories(userId)
     }
 
     private fun syncBalance(userId: String) = viewModelScope.launch {
@@ -138,7 +143,6 @@ class SharedViewModel: ViewModel() {
     private fun markFirstTransactionAdded() { hasAddedFirstTransaction = true }
 
     fun fetchUserData(userId: String) = viewModelScope.launch {
-        _isLoading.value = true
         try {
             updateUserData(repository.fetchUserData(userId))
         } catch (e: Exception) {
@@ -169,6 +173,15 @@ class SharedViewModel: ViewModel() {
         if (!repository.isDateInFuture(date)) {
             if (tipoTransaccion == "Gasto") applyExpense(cantidad) else applyIncome(cantidad)
         }
+    }
+
+    private fun fetchCategories(userId: String) = viewModelScope.launch{
+        val categoriesDocuments = repository.fetchCategories(userId)
+        if (categoriesDocuments != null) {
+            categoriesState.value = categoriesDocuments
+        }
+        val categoryNames: List<String> = categoriesDocuments?.map { it.name } ?: emptyList()
+        categoriesNamesState.value = categoryNames
     }
 
     private fun getCurrentUserId(): String? = FirebaseAuth.getInstance().currentUser?.uid

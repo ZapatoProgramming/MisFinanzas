@@ -19,6 +19,7 @@ class AddViewModel : ViewModel() {
     private val transactionRepository = TransactionRepository()
     private val roomRepository = RoomRepository()
 
+    var description by mutableStateOf("")
     var amount by mutableStateOf("")
     var category by mutableStateOf("")
     var day by mutableStateOf("")
@@ -32,6 +33,10 @@ class AddViewModel : ViewModel() {
 
     fun updateAmount(value: String) {
         amount = value
+    }
+
+    fun updateDescription(value: String){
+        description = value
     }
 
     fun updateCategory(value: String) {
@@ -80,11 +85,16 @@ class AddViewModel : ViewModel() {
             type = transactionType,
             amount = amount,
             category = category,
+            description = description,
             start_date = startDate,
             frequency = subscriptionFrequency,
             next_payment_date = transactionRepository.calculateNextPaymentDate(startDate, subscriptionFrequency),
             created_at = Date()
         )
+
+        if(transactionRepository.uploadSubscription(userId, subscription)){
+            subscription.synced = true
+        }
 
         roomRepository.insertSubscription(subscription)
     }
@@ -96,6 +106,7 @@ class AddViewModel : ViewModel() {
             type = transactionType,
             amount = amount,
             category = category,
+            description = description,
             date = date,
             created_at = Date()
         )
@@ -104,12 +115,17 @@ class AddViewModel : ViewModel() {
             transaction.solved = true
         }
 
+        if(transactionRepository.uploadTransaction(userId, transaction)){
+            transaction.synced = true
+        }
+
         roomRepository.insertTransaction(transaction)
     }
 
     private fun resetInputs() {
         amount = ""
         category = ""
+        description = ""
         day = ""
         month = ""
         year = ""

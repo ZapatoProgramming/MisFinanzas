@@ -2,12 +2,15 @@ package com.example.misfinanzas.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,6 +19,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.misfinanzas.components.PieChart
+import com.example.misfinanzas.room.TransactionEntity
 import com.example.misfinanzas.viewModels.DashboardViewModel
 import com.example.misfinanzas.viewModels.SharedViewModel
 
@@ -38,7 +45,7 @@ fun DashboardView(viewModel: SharedViewModel, navController: NavController,
                   dashboardViewModel: DashboardViewModel = viewModel()) {
     Column(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize().fillMaxHeight().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -59,7 +66,7 @@ fun DashboardView(viewModel: SharedViewModel, navController: NavController,
         Row(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .background(Color(0xFFEFEBD1), shape = MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.tertiary, shape = MaterialTheme.shapes.medium)
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
@@ -127,7 +134,38 @@ fun DashboardView(viewModel: SharedViewModel, navController: NavController,
                 )
             }
         } else{
-            Text("Grafico")
+            val transactions = dashboardViewModel.getAllTransactions().collectAsState(initial = emptyList())
+            val groupedByCategoryWhereTypeIsExpense = transactions.value
+                .filter { it.type == "Gasto" }
+                .groupBy { it.category }
+                .mapValues { entry -> entry.value.sumOf { it.amount }.toInt() }
+
+            val groupedByCategoryWhereTypeIsIncome = transactions.value
+                .filter { it.type == "Ingreso" }
+                .groupBy { it.category }
+                .mapValues { entry -> entry.value.sumOf { it.amount }.toInt() }
+                Spacer(modifier = Modifier.height(20.dp))
+            Row(modifier = Modifier.fillMaxWidth()) {
+                // Primer PieChart ocupando la mitad del ancho
+                Box(
+                    modifier = Modifier
+                        .weight(1f)  // Ocupa la mitad del ancho
+                        .padding(8.dp)  // Opcional: agregar un poco de espacio alrededor
+                ) {
+                    PieChart(data = groupedByCategoryWhereTypeIsExpense)  // Usando tu PieChart con datos de Gasto
+                }
+
+                // Segundo PieChart ocupando la otra mitad del ancho
+                Box(
+                    modifier = Modifier
+                        .weight(1f)  // Ocupa la otra mitad del ancho
+                        .padding(8.dp)  // Opcional: agregar un poco de espacio alrededor
+                ) {
+                    PieChart(data = groupedByCategoryWhereTypeIsIncome)  // Usando tu PieChart con datos de Ingreso
+                }
+            }
+
+                TransactionCards(transactions = transactions)
         }
     }
 }
@@ -194,6 +232,60 @@ fun EnterBalanceView(viewModel: SharedViewModel = viewModel(), navController: Na
             ) {
                 Text("Guardar")
             }
+        }
+    }
+}
+
+@Composable
+fun TransactionCards(transactions: State<List<TransactionEntity>>){
+    transactions.value.forEach { transaction ->
+        TransactionCard(transaction = transaction)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+fun TransactionCard(transaction: TransactionEntity) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiary
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = transaction.category,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = transaction.description,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Tipo: ${transaction.type}",
+                fontSize = 14.sp,
+                color = Color.DarkGray
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Monto: $${transaction.amount}",
+                fontSize = 14.sp,
+                color = Color.DarkGray
+            )
+            Spacer(modifier = Modifier.height(4.dp))
         }
     }
 }

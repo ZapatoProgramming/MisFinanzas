@@ -1,6 +1,7 @@
 package com.example.misfinanzas.utils
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.tasks.await
 
 object FirestoreUtils {
@@ -60,6 +61,24 @@ object FirestoreUtils {
         } catch (e: Exception) {
             e.printStackTrace()
             false
+        }
+    }
+
+    suspend inline fun <reified T> fetchCollectionAs(
+        collectionName: String
+    ): List<T>? {
+        return try {
+            val querySnapshot: QuerySnapshot = FirebaseFirestore.getInstance()
+                .collection(collectionName)
+                .get()
+                .await()
+
+            querySnapshot.documents.mapNotNull { document ->
+                document.toObject(T::class.java)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

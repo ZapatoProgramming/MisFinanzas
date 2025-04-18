@@ -41,6 +41,10 @@ fun AddView(
 ) {
     var typeMenuExpanded by remember { mutableStateOf(false) }
     var frequencyMenuExpanded by remember { mutableStateOf(false) }
+    var categoriesExpanded by remember { mutableStateOf(false)}
+
+    val categories by viewModel.categoriesNamesState.collectAsState()
+    var selectedCategory by remember { mutableStateOf("") }
 
 
     val buttonColor = when (addViewModel.transactionType) {
@@ -121,18 +125,66 @@ fun AddView(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+            ) {
+                Button(
+                    onClick = { categoriesExpanded = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(selectedCategory.ifEmpty { "Seleccionar Categoría" }, color = Color.White)
+                }
+                DropdownMenu(
+                    expanded = categoriesExpanded,
+                    onDismissRequest = { categoriesExpanded = false },
+                    modifier = Modifier.fillMaxWidth().background(Color.White)
+                ) {
+                    categories.forEach { category ->
+                        DropdownMenuItem(
+                            text = { Text(category, color = Color.Black) },
+                            onClick = {
+                                selectedCategory = category
+                                addViewModel.updateCategory(category)
+                                categoriesExpanded = false
+                            }
+                        )
+                    }
+
+                    DropdownMenuItem(
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("+ ", fontWeight = FontWeight.Bold, color = Color.Black)
+                                Text(
+                                    "Agregar nueva categoría",
+                                    fontWeight = FontWeight.Bold,
+                                    textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
+                                    color = Color.Black
+                                )
+                            }
+                        },
+                        onClick = {
+                            categoriesExpanded = false
+                            navController.navigate(HomeScreens.CreateCategory.route)
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
             TextField(
-                value = addViewModel.amount,
-                onValueChange = { addViewModel.updateAmount(it) },
-                label = { Text("Cantidad") },
+                value = addViewModel.description,
+                onValueChange = { addViewModel.updateDescription(it) },
+                label = { Text("Descripción") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             TextField(
-                value = addViewModel.category,
-                onValueChange = { addViewModel.updateCategory(it) },
-                label = { Text("Categoría") },
+                value = addViewModel.amount,
+                onValueChange = { addViewModel.updateAmount(it) },
+                label = { Text("Cantidad") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -239,7 +291,6 @@ fun AddView(
                 }
                 Button(
                     onClick = {
-                        navController.navigate(HomeScreens.Dashboard.route)
                         val userId = FirebaseAuth.getInstance().currentUser?.uid
                         if (userId != null) {
                             addViewModel.createTransaction(userId)
