@@ -3,6 +3,7 @@ package com.example.misfinanzas
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -15,6 +16,7 @@ import com.example.misfinanzas.ui.theme.MisFinanzasTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         val firebaseAuthService = FirebaseAuthService()
         GlobalDatabase.initialize(applicationContext)
         setContent {
