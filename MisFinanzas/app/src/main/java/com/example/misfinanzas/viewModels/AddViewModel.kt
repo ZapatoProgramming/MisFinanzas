@@ -94,7 +94,7 @@ class AddViewModel : ViewModel() {
 
         if(transactionRepository.uploadSubscription(userId, subscription)){
             subscription.synced = true
-        }
+        } else subscription.synced = false
 
         roomRepository.insertSubscription(subscription)
     }
@@ -117,7 +117,7 @@ class AddViewModel : ViewModel() {
 
         if(transactionRepository.uploadTransaction(userId, transaction)){
             transaction.synced = true
-        }
+        } else transaction.synced = false
 
         roomRepository.insertTransaction(transaction)
     }
