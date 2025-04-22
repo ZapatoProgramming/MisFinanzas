@@ -92,9 +92,12 @@ class AddViewModel : ViewModel() {
             created_at = Date()
         )
 
-        subscription.synced = transactionRepository.uploadSubscription(userId, subscription)
-
         roomRepository.insertSubscription(subscription)
+        if(transactionRepository.uploadSubscription(userId, subscription)){
+            subscription.synced = true
+            roomRepository.insertSubscription(subscription)
+        }
+
     }
 
     private suspend fun saveTransaction(userId: String, amount: Double, date: Date) {
@@ -113,9 +116,11 @@ class AddViewModel : ViewModel() {
             transaction.solved = true
         }
 
-        transaction.synced = transactionRepository.uploadTransaction(userId, transaction)
-
         roomRepository.insertTransaction(transaction)
+        if(transactionRepository.uploadTransaction(userId, transaction)){
+            transaction.synced = true
+            roomRepository.insertTransaction(transaction)
+        }
     }
 
     private fun resetInputs() {
