@@ -3,6 +3,7 @@ package com.example.misfinanzas.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.misfinanzas.auth.FirebaseAuthService
+import com.example.misfinanzas.models.Category
 import com.example.misfinanzas.models.SignUpModel
 import com.example.misfinanzas.models.UserDataSignUp
 import com.example.misfinanzas.utils.FirestoreUtils
@@ -12,6 +13,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class SignUpViewModel: ViewModel() {
 
@@ -87,6 +89,7 @@ class SignUpViewModel: ViewModel() {
                         has_added_first_transaction = false
                     )
                     async {createUserDocument(userId, userData)}.await()
+                    async {createDefaultCategoriesForUser(userId)}.await()
                 }
             } else {
                 _signupMessage.value = errorMessage ?: "Error en la creación de cuenta."
@@ -104,6 +107,22 @@ class SignUpViewModel: ViewModel() {
             } catch (e: Exception) {
                 _signupMessage.value = "Error al crear el documento del usuario: ${e.message}"
             }
+        }
+    }
+
+    private suspend fun createDefaultCategoriesForUser(userId: String) {
+        val defaultCategories = listOf(
+            Category(name = "Comida", color = "#FF6347", description = "Gastos relacionados con alimentos"),
+            Category(name = "Transporte", color = "#4682B4", description = "Viajes, combustible o transporte público"),
+            Category(name = "Salud", color = "#32CD32", description = "Medicamentos, consultas médicas"),
+            Category(name = "Entretenimiento", color = "#8A2BE2", description = "Cine, videojuegos, etc."),
+            Category(name = "Educación", color = "#FFD700", description = "Libros, cursos, colegiaturas")
+        )
+
+        // Subir cada categoría como documentos individuales en la subcolección Categories
+        defaultCategories.forEach { category ->
+            val categoryId = UUID.randomUUID().toString()
+            FirestoreUtils.uploadDocument("User/${userId}/Categories", categoryId, category)
         }
     }
 }
