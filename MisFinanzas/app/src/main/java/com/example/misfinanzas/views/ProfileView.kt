@@ -13,12 +13,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.misfinanzas.utils.NotificationUtils.showReminderNotification
 
 @Composable
 fun ProfileView(
     onSignOut: () -> Unit
 ) {
+    val context = LocalContext.current
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -32,6 +35,12 @@ fun ProfileView(
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.headlineMedium
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { showReminderNotification(context) }
+            ) {
+                Text(text = "Prueba notificación")
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { onSignOut() },

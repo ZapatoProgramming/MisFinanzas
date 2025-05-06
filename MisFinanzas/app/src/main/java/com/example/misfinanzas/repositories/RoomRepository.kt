@@ -25,6 +25,10 @@ class RoomRepository @Inject constructor() {
         transactionDao.insertTransaction(transaction)
     }
 
+    suspend fun insertAllTransactions(transactions: List<TransactionEntity>) {
+        transactionDao.insertAll(transactions)
+    }
+
     suspend fun getUnsyncedTransactions(userId: String) : List<TransactionEntity>{
         return transactionDao.getUnsyncedTransactions(userId)
     }
@@ -35,6 +39,10 @@ class RoomRepository @Inject constructor() {
 
     suspend fun insertSubscription(subscriptionEntity: SubscriptionEntity){
         subscriptionDao.insertSubscription(subscriptionEntity)
+    }
+
+    suspend fun insertAllSubscriptions(subscriptions: List<SubscriptionEntity>) {
+        subscriptionDao.insertAll(subscriptions)
     }
 
     fun getAllSubscriptions(userId: String): Flow<List<SubscriptionEntity>> {

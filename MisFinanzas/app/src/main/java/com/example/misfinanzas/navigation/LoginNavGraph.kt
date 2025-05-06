@@ -1,12 +1,15 @@
 package com.example.misfinanzas.navigation
 
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.misfinanzas.auth.FirebaseAuthService
+import com.example.misfinanzas.utils.NotificationUtils.RequestNotificationPermission
 import com.example.misfinanzas.views.HomeView
 import com.example.misfinanzas.views.LoginView
 import com.example.misfinanzas.views.SignUpView
@@ -52,6 +55,20 @@ fun NavGraph(firebaseAuthService: FirebaseAuthService) {
             )
         }
         composable(AppScreens.NavigationHome.route){
+            val context = LocalContext.current
+            val shouldShowPermissionRequest =
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        !PreferencesManager.areNotificationsEnabled(context)
+            if (shouldShowPermissionRequest) {
+                RequestNotificationPermission(
+                    onPermissionGranted = {
+                        PreferencesManager.setNotificationsEnabled(context, true)
+                    },
+                    onPermissionDenied = {
+                        PreferencesManager.setNotificationsEnabled(context, false)
+                    }
+                )
+            }
             HomeView()
         }
     }

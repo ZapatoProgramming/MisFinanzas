@@ -13,6 +13,16 @@ import java.util.Calendar
 import java.util.Date
 
 class TransactionRepository {
+    suspend fun fetchTransactions(userId: String): List<Transaction>? {
+        val collectionName = "User/${userId}/Transactions"
+        return FirestoreUtils.fetchCollectionAs<Transaction>(collectionName)
+    }
+
+    suspend fun fetchSubscriptions(userId: String): List<Subscription>? {
+        val collectionName = "User/${userId}/Subscriptions"
+        return FirestoreUtils.fetchCollectionAs<Subscription>(collectionName)
+    }
+
     suspend fun uploadTransaction(userId: String, transactionEntity: TransactionEntity): Boolean {
         val transaction = entityToDocument(transactionEntity)
         return FirestoreUtils.uploadDocument(
@@ -116,6 +126,49 @@ class TransactionRepository {
                 )
             }
             else -> throw IllegalArgumentException("Entidad no existe")
+        }
+    }
+
+    fun documentToEntity(document: Any, userId: String): Any? {
+        return when (document) {
+            is Transaction -> {
+                TransactionEntity(
+                    id = document.id,
+                    userId = userId,
+                    type = document.type,
+                    amount = document.amount,
+                    category = document.category,
+                    description = document.description,
+                    date = document.date,
+                    created_at = document.created_at,
+                    solved = document.solved,
+                    synced = true
+                )
+            }
+
+            is Subscription -> {
+                val startDate = document.start_date ?: return null
+                val nextPaymentDate = document.next_payment_date ?: return null
+                val createdAt = document.created_at ?: return null
+
+                SubscriptionEntity(
+                    userId = userId,
+                    id = document.id,
+                    type = document.type,
+                    amount = document.amount,
+                    category = document.category,
+                    description = document.description,
+                    frequency = document.frequency,
+                    start_date = startDate,
+                    next_payment_date = nextPaymentDate,
+                    created_at = createdAt,
+                    synced = true
+                )
+            }
+
+            else -> {
+                null
+            }
         }
     }
 

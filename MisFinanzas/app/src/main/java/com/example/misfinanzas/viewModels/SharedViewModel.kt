@@ -37,7 +37,7 @@ class SharedViewModel: ViewModel() {
         private set
 
     val categoriesNamesState = MutableStateFlow<List<String>>(emptyList())
-    val categoriesState = MutableStateFlow<List<Category>>(emptyList())
+    private val categoriesState = MutableStateFlow<List<Category>>(emptyList())
 
     val message: String
         get() = when {
@@ -49,9 +49,27 @@ class SharedViewModel: ViewModel() {
     fun checkData() = viewModelScope.launch {
         val userId = getCurrentUserId().toString()
         syncBalance(userId)
+        fetchTransactions(userId)
+        fetchSubscriptions(userId)
         syncLocalTransactionsToFirebase(userId)
         syncLocalSubscriptionsToFirebase(userId)
         fetchCategories(userId)
+    }
+
+    private fun fetchTransactions(userId: String) = viewModelScope.launch{
+       val transactionDocs = repository.fetchTransactions(userId)
+        val transactionEntities: List<TransactionEntity> = transactionDocs?.map { doc ->
+            repository.documentToEntity(doc,userId) as TransactionEntity
+        } ?: emptyList()
+        roomRepository.insertAllTransactions(transactionEntities)
+    }
+
+    private fun fetchSubscriptions(userId: String) = viewModelScope.launch {
+        val subscriptionDocs = repository.fetchSubscriptions(userId)
+        val subscriptionEntities: List<SubscriptionEntity> = subscriptionDocs?.map{ doc ->
+            repository.documentToEntity(doc, userId) as SubscriptionEntity
+        } ?: emptyList()
+        roomRepository.insertAllSubscriptions(subscriptionEntities)
     }
 
     private fun syncBalance(userId: String) = viewModelScope.launch {

@@ -13,6 +13,9 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transaction: TransactionEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<TransactionEntity>)
+
     @Query("SELECT * FROM transactions WHERE userId = :userId")
     fun getAllTransactions(userId: String): Flow<List<TransactionEntity>>
 
@@ -31,6 +34,9 @@ interface SubscriptionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSubscription(subscription: SubscriptionEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<SubscriptionEntity>)
 
     @Query("SELECT * FROM subscriptions WHERE userId = :userId ORDER BY next_payment_date ASC")
     fun getSubscriptionsByUserId(userId: String): Flow<List<SubscriptionEntity>>

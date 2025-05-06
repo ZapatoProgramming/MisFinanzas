@@ -1,8 +1,10 @@
 package com.example.misfinanzas.components
 
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -34,7 +36,15 @@ fun DatePickerModal(
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    headlineContentColor = MaterialTheme.colorScheme.tertiary,
+                    weekdayContentColor = MaterialTheme.colorScheme.secondary,
+                    subheadContentColor = MaterialTheme.colorScheme.tertiary,
+                    navigationContentColor = MaterialTheme.colorScheme.tertiary,
+                    dayContentColor = MaterialTheme.colorScheme.tertiary
+                ))
         }
     }
 }
