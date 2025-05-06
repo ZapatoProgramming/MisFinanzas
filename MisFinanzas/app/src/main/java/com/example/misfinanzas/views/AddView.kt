@@ -38,6 +38,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 @Composable
 fun AddView(
@@ -55,7 +56,12 @@ fun AddView(
 
     var showDatePickerModal by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf<Long?>(null) }
-    val dateFormatter = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
+    val dateFormatter = remember {
+        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+    }
+
 
     val buttonColor = when (addViewModel.transactionType) {
         "Ingreso" -> MaterialTheme.colorScheme.primary
@@ -213,7 +219,9 @@ fun AddView(
             ) {
                 Text(
                     text = if (selectedDate != null) {
-                        "Date: ${dateFormatter.format(Date(selectedDate!!))}"
+                        val date = selectedDate
+                         val x = date?.plus((23*60*60*1000))
+                        "Date: ${dateFormatter.format(Date(x!!))}"
                     } else {
                         "Select Date"
                     },
@@ -236,7 +244,9 @@ fun AddView(
 
                     // Actualizar los valores de día, mes y año en el ViewModel
                     if (dateMillis != null) {
-                        val calendar = Calendar.getInstance().apply { timeInMillis = dateMillis }
+                        val date = dateMillis
+                        val x = date.plus((23*60*60*1000))
+                        val calendar = Calendar.getInstance().apply { timeInMillis = x }
                         addViewModel.day = calendar.get(Calendar.DAY_OF_MONTH ).toString()
                         addViewModel.month = (calendar.get(Calendar.MONTH) + 1).toString() // Meses son base 0
                         addViewModel.year = calendar.get(Calendar.YEAR).toString()
