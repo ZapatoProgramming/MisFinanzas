@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -22,6 +23,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.ui.Alignment
@@ -31,6 +33,11 @@ import com.example.misfinanzas.viewModels.AddViewModel
 import com.example.misfinanzas.viewModels.SharedViewModel
 import com.google.firebase.auth.FirebaseAuth
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.misfinanzas.components.DatePickerModal
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun AddView(
@@ -46,6 +53,9 @@ fun AddView(
     val categories by viewModel.categoriesNamesState.collectAsState()
     var selectedCategory by remember { mutableStateOf("") }
 
+    var showDatePickerModal by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf<Long?>(null) }
+    val dateFormatter = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
 
     val buttonColor = when (addViewModel.transactionType) {
         "Ingreso" -> MaterialTheme.colorScheme.primary
@@ -198,37 +208,44 @@ fun AddView(
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Button(
+                onClick = { showDatePickerModal = true }
             ) {
-                TextField(
-                    value = addViewModel.day,
-                    onValueChange = { if (!addViewModel.isToday) addViewModel.day = it },
-                    label = { Text("Día") },
-                    enabled = !addViewModel.isToday,
-                    modifier = Modifier.weight(1f)
+                Text(
+                    text = if (selectedDate != null) {
+                        "Date: ${dateFormatter.format(Date(selectedDate!!))}"
+                    } else {
+                        "Select Date"
+                    },
+                    color = if (selectedDate == null) LocalContentColor.current.copy(alpha = 0.38f) else LocalContentColor.current
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                TextField(
-                    value = addViewModel.month,
-                    onValueChange = { if (!addViewModel.isToday) addViewModel.month = it },
-                    label = { Text("Mes") },
-                    enabled = !addViewModel.isToday,
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                TextField(
-                    value = addViewModel.year,
-                    onValueChange = { if (!addViewModel.isToday) addViewModel.year = it },
-                    label = { Text("Año") },
-                    enabled = !addViewModel.isToday,
-                    modifier = Modifier.weight(1f)
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Filled.CalendarMonth,
+                    contentDescription = "Calendar",
+                    tint = if (selectedDate == null) LocalContentColor.current.copy(alpha = 0.38f) else LocalContentColor.current
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
 
+// DatePickerModal
+            DatePickerModal(
+                showDialog = showDatePickerModal,
+                onDateSelected = { dateMillis ->
+                    selectedDate = dateMillis
+                    showDatePickerModal = false
+
+                    // Actualizar los valores de día, mes y año en el ViewModel
+                    if (dateMillis != null) {
+                        val calendar = Calendar.getInstance().apply { timeInMillis = dateMillis }
+                        addViewModel.day = calendar.get(Calendar.DAY_OF_MONTH ).toString()
+                        addViewModel.month = (calendar.get(Calendar.MONTH) + 1).toString() // Meses son base 0
+                        addViewModel.year = calendar.get(Calendar.YEAR).toString()
+                    }
+                },
+                onDismiss = { showDatePickerModal = false }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("¿Es una suscripción?", color = Color.White)
                 Checkbox(

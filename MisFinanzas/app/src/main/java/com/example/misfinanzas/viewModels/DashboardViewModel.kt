@@ -6,9 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.misfinanzas.models.Category
 import com.example.misfinanzas.models.DashboardModel
 import com.example.misfinanzas.models.DashboardModel.getMonthName
 import com.example.misfinanzas.repositories.RoomRepository
+import com.example.misfinanzas.repositories.TransactionRepository
 import com.example.misfinanzas.room.TransactionEntity
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
@@ -22,11 +24,11 @@ class DashboardViewModel : ViewModel() {
     var selectedMonth by mutableStateOf(months[currentIndex])
         private set
 
+    private val repository = TransactionRepository()
+
     // Estados para manejar datos
     private val _allTransactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
     private val _monthTransactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
-    private val _expensesByCategory = MutableStateFlow<Map<String, Int>>(emptyMap())
-    private val _incomesByCategory = MutableStateFlow<Map<String, Int>>(emptyMap())
 
     private val _totalIncome = MutableStateFlow(0)
     val totalIncome: StateFlow<Int> get() = _totalIncome
@@ -36,16 +38,24 @@ class DashboardViewModel : ViewModel() {
 
     // Exponer estados inmutables
     val monthTransactions: StateFlow<List<TransactionEntity>> get() = _monthTransactions
-    val expensesByCategory: StateFlow<Map<String, Int>> get() = _expensesByCategory
-    val incomesByCategory: StateFlow<Map<String, Int>> get() = _incomesByCategory
+
+    private val _expensesByCategory = MutableStateFlow<Map<String, Pair<Int, String>>>(emptyMap())
+    val expensesByCategory: StateFlow<Map<String, Pair<Int, String>>> get() = _expensesByCategory
+
+    private val _incomesByCategory = MutableStateFlow<Map<String, Pair<Int, String>>>(emptyMap())
+    val incomesByCategory: StateFlow<Map<String, Pair<Int, String>>> get() = _incomesByCategory
 
     private val roomRepository = RoomRepository()
     private val userId: String? = FirebaseAuth.getInstance().currentUser?.uid
+
+    private val _categoriesState = MutableStateFlow<List<Category>>(emptyList())
+    private val categoriesState: StateFlow<List<Category>> get() = _categoriesState
 
     init {
         updateSelectedMonth()
         if (userId != null) {
             viewModelScope.launch {
+                fetchCategories(userId)
                 getAllTransactions(userId).collect { list ->
                     _allTransactions.value = list
                     refreshFilteredData(list)
@@ -80,33 +90,53 @@ class DashboardViewModel : ViewModel() {
     private fun refreshFilteredData(transactions: List<TransactionEntity>) {
         val currentMonthFilter = selectedMonth
 
+        // Filtrar transacciones del mes seleccionado
         val filtered = transactions.filter { transaction ->
             transaction.date?.getMonthName() == currentMonthFilter
         }
 
-        // Actualizar estado filtrado para transacciones del mes
-        _monthTransactions.value = filtered
+        // Obtener las categorías actuales
+        val categories = categoriesState.value.associateBy { it.name }
 
-        // Calcular totales
+        // Calcular totales por categoría para Gastos
         val expenseByCategory = filtered
             .filter { it.type == "Gasto" }
             .groupBy { it.category }
-            .mapValues { entry -> entry.value.sumOf { it.amount }.toInt() }
+            .mapValues { entry ->
+                val totalAmount = entry.value.sumOf { it.amount }.toInt()
+                val categoryColor = categories[entry.key]?.color ?: "#000000" // Color predeterminado si no se encuentra
+                Pair(totalAmount, categoryColor)
+            }
 
+        // Calcular totales por categoría para Ingresos
         val incomeByCategory = filtered
             .filter { it.type == "Ingreso" }
             .groupBy { it.category }
-            .mapValues { entry -> entry.value.sumOf { it.amount }.toInt() }
+            .mapValues { entry ->
+                val totalAmount = entry.value.sumOf { it.amount }.toInt()
+                val categoryColor = categories[entry.key]?.color ?: "#000000" // Color predeterminado si no se encuentra
+                Pair(totalAmount, categoryColor)
+            }
 
+        // Actualizar estados
+        _monthTransactions.value = filtered
         _expensesByCategory.value = expenseByCategory
         _incomesByCategory.value = incomeByCategory
 
-        // 🆕 Actualizar totales de Ingresos y Gastos
-        _totalIncome.value = incomeByCategory.values.sum()
-        _totalExpense.value = expenseByCategory.values.sum()
+        // Actualizar totales de Ingresos y Gastos
+        _totalIncome.value = incomeByCategory.values.sumOf { it.first }
+        _totalExpense.value = expenseByCategory.values.sumOf { it.first }
     }
 
     private fun getAllTransactions(userId: String): Flow<List<TransactionEntity>> {
         return roomRepository.getAllTransactions(userId)
+    }
+
+    private fun fetchCategories(userId: String) = viewModelScope.launch{
+        val categoriesDocuments = repository.fetchCategories(userId)
+        if (categoriesDocuments != null) {
+            _categoriesState.value = categoriesDocuments
+            refreshFilteredData(_allTransactions.value)
+        }
     }
 }

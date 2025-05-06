@@ -31,40 +31,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColorInt
 
 @Composable
 fun PieChart(
-    data: Map<String, Int>,
+    data: Map<String, Pair<Int, String>>, // Nuevo formato: nombre -> (monto, color)
     radiusOuter: Dp = 50.dp,
     chartBarWidth: Dp = 35.dp,
     animDuration: Int = 1000,
 ) {
-
-    val totalSum = data.values.sum()
+    val totalSum = data.values.sumOf { it.first } // Suma de los montos
     val floatValue = mutableListOf<Float>()
 
-    // To set the value of each Arc according to
-    // the value given in the data, we have used a simple formula.
-    // For a detailed explanation check out the Medium Article.
-    // The link is in the about section and readme file of this GitHub Repository
+    // Calcular el ángulo de cada segmento
     data.values.forEachIndexed { index, values ->
-        floatValue.add(index, 360 * values.toFloat() / totalSum.toFloat())
+        floatValue.add(index, 360 * values.first.toFloat() / totalSum.toFloat())
     }
-
-    // add the colors as per the number of data(no. of pie chart entries)
-    // so that each data will get a color
-    val colors = listOf(
-        Color.Cyan,
-        Color.Blue,
-        Color.Black,
-        Color.Red,
-    )
 
     var animationPlayed by remember { mutableStateOf(false) }
 
     var lastValue = 0f
 
-    // it is the diameter value of the Pie
+    // Animación del tamaño del gráfico
     val animateSize by animateFloatAsState(
         targetValue = if (animationPlayed) radiusOuter.value * 2f else 0f,
         animationSpec = tween(
@@ -74,8 +62,7 @@ fun PieChart(
         )
     )
 
-    // if you want to stabilize the Pie Chart you can use value -90f
-    // 90f is used to complete 1/4 of the rotation
+    // Animación de rotación del gráfico
     val animateRotation by animateFloatAsState(
         targetValue = if (animationPlayed) 90f * 11f else 0f,
         animationSpec = tween(
@@ -85,7 +72,7 @@ fun PieChart(
         )
     )
 
-    // to play the animation only once when the function is Created or Recomposed
+    // Reproducir la animación solo una vez
     LaunchedEffect(key1 = true) {
         animationPlayed = true
     }
@@ -94,8 +81,7 @@ fun PieChart(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        // Pie Chart using Canvas Arc
+        // Gráfico circular usando Canvas
         Box(
             modifier = Modifier.size(animateSize.dp),
             contentAlignment = Alignment.Center
@@ -105,12 +91,13 @@ fun PieChart(
                     .size(radiusOuter * 2f)
                     .rotate(animateRotation)
             ) {
-                // draw each Arc for each data entry in Pie Chart
+                // Dibujar cada segmento del gráfico
                 floatValue.forEachIndexed { index, value ->
+                    val color = Color(data.values.elementAt(index).second.toColorInt())
                     drawArc(
-                        color = colors[index],
-                        lastValue,
-                        value,
+                        color = color,
+                        startAngle = lastValue,
+                        sweepAngle = value,
                         useCenter = false,
                         style = Stroke(chartBarWidth.toPx(), cap = StrokeCap.Butt)
                     )
@@ -119,31 +106,27 @@ fun PieChart(
             }
         }
 
-        // To see the data in more structured way
-        // Compose Function in which Items are showing data
+        // Mostrar los detalles del gráfico
         DetailsPieChart(
-            data = data,
-            colors = colors
+            data = data
         )
-
     }
-
 }
 
 @Composable
 fun DetailsPieChart(
-    data: Map<String, Int>,
-    colors: List<Color>
+    data: Map<String, Pair<Int, String>> // Nuevo formato: nombre -> (monto, color)
 ) {
     Column(
         modifier = Modifier
             .padding(top = 80.dp)
             .fillMaxWidth()
     ) {
-        data.values.forEachIndexed { index, value ->
+        data.forEach { (categoryName, categoryData) ->
+            val (amount, colorHex) = categoryData
             DetailsPieChartItem(
-                data = Pair(data.keys.elementAt(index), value),
-                color = colors[index]
+                data = Pair(categoryName, amount),
+                color = Color(colorHex.toColorInt())
             )
         }
     }

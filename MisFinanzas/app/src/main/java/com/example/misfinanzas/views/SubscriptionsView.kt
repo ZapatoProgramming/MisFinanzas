@@ -78,7 +78,7 @@ fun SubscriptionCard(subscription: SubscriptionEntity) {
         ) {
             Text(
                 text = subscription.category,
-                fontSize = 18.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -91,14 +91,7 @@ fun SubscriptionCard(subscription: SubscriptionEntity) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = subscription.description,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Tipo: $${subscription.type}",
+                text = "Tipo: ${subscription.type}",
                 fontSize = 14.sp,
                 color = Color.DarkGray
             )
