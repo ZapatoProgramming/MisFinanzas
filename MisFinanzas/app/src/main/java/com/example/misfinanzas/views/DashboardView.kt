@@ -141,10 +141,10 @@ fun DashboardView(viewModel: SharedViewModel, navController: NavController,
         } else{
             Row(modifier = Modifier.fillMaxWidth()) {
                 Box(modifier = Modifier.weight(1f).padding(8.dp)) {
-                    PieChart(data = expenseCategories)
+                    PieChart(data = incomeCategories)
                 }
                 Box(modifier = Modifier.weight(1f).padding(8.dp)) {
-                    PieChart(data = incomeCategories)
+                    PieChart(data = expenseCategories)
                 }
             }
 
