@@ -244,8 +244,7 @@ fun AddView(
 
                     // Actualizar los valores de día, mes y año en el ViewModel
                     if (dateMillis != null) {
-                        val date = dateMillis
-                        val x = date.plus((23*60*60*1000))
+                        val x = dateMillis.plus((23*60*60*1000))
                         val calendar = Calendar.getInstance().apply { timeInMillis = x }
                         addViewModel.day = calendar.get(Calendar.DAY_OF_MONTH ).toString()
                         addViewModel.month = (calendar.get(Calendar.MONTH) + 1).toString() // Meses son base 0
