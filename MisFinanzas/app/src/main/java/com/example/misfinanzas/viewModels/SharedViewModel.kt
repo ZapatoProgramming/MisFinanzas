@@ -12,8 +12,10 @@ import com.example.misfinanzas.models.UserData
 import com.example.misfinanzas.repositories.RoomRepository
 import com.example.misfinanzas.repositories.TransactionRepository
 import com.example.misfinanzas.room.BalanceEntity
+import com.example.misfinanzas.room.CategoryEntity
 import com.example.misfinanzas.room.SubscriptionEntity
 import com.example.misfinanzas.room.TransactionEntity
+import com.example.misfinanzas.utils.FirestoreUtils
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,9 +53,10 @@ class SharedViewModel: ViewModel() {
         syncBalance(userId)
         fetchTransactions(userId)
         fetchSubscriptions(userId)
+        fetchCategories(userId)
         syncLocalTransactionsToFirebase(userId)
         syncLocalSubscriptionsToFirebase(userId)
-        fetchCategories(userId)
+        syncLocalCategoriesToFirebase(userId)
     }
 
     private fun fetchTransactions(userId: String) = viewModelScope.launch{
@@ -193,13 +196,38 @@ class SharedViewModel: ViewModel() {
         }
     }
 
-    private fun fetchCategories(userId: String) = viewModelScope.launch{
-        val categoriesDocuments = repository.fetchCategories(userId)
-        if (categoriesDocuments != null) {
-            categoriesState.value = categoriesDocuments
+    private fun fetchCategories(userId: String) = viewModelScope.launch {
+        val categoryDocuments = repository.fetchCategories(userId)
+
+        val categoryEntities: List<CategoryEntity> = categoryDocuments?.mapNotNull { doc ->
+            repository.documentToEntity(doc, userId) as? CategoryEntity
+        } ?: emptyList()
+
+        roomRepository.insertAllCategories(categoryEntities)
+    }
+
+    private fun syncLocalCategoriesToFirebase(userId: String) = viewModelScope.launch {
+        val categoryEntities = roomRepository.getAllCategories(userId)
+        val categoryDocuments = categoryEntities.map { entity ->
+            Category(
+                id = entity.id,
+                name = entity.name,
+                color = entity.color,
+                description = entity.description
+            )
         }
-        val categoryNames: List<String> = categoriesDocuments?.map { it.name } ?: emptyList()
+
+        categoriesState.value = categoryDocuments
+        val categoryNames = categoryDocuments.map { it.name }
         categoriesNamesState.value = categoryNames
+
+        categoryDocuments.forEach { document ->
+            FirestoreUtils.uploadDocument(
+                collectionName = "User/${userId}/Categories",
+                documentId = document.id,
+                data = document
+            )
+        }
     }
 
     private fun getCurrentUserId(): String? = FirebaseAuth.getInstance().currentUser?.uid

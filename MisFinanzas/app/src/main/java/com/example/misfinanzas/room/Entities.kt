@@ -39,3 +39,13 @@ data class BalanceEntity(
     val current_balance: Double = 0.0,
     val last_updated: Date = Date()
 )
+
+@Entity(tableName = "categories")
+data class CategoryEntity(
+    @PrimaryKey var id: String = "",
+    val userId: String = "",
+    val name: String = "",
+    val color: String = "",
+    val description: String = "",
+    var synced: Boolean = false
+)

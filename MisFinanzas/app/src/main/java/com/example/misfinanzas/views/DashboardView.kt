@@ -19,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,13 @@ fun DashboardView(viewModel: SharedViewModel, navController: NavController,
     val incomeCategories by dashboardViewModel.incomesByCategory.collectAsState()
     val totalIncome by dashboardViewModel.totalIncome.collectAsState()
     val totalExpense by dashboardViewModel.totalExpense.collectAsState()
+    val estimatedBalance  by dashboardViewModel.estimatedBalance.collectAsState()
+
+    LaunchedEffect(Unit) {
+        val balanceReal = viewModel.balance
+        dashboardViewModel.updateEstimatedBalanceWithRealBalance(balanceReal)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize().fillMaxHeight().verticalScroll(rememberScrollState()),
@@ -89,13 +97,32 @@ fun DashboardView(viewModel: SharedViewModel, navController: NavController,
                 Text("Gastos", fontWeight = FontWeight.Bold, color = Color.Black)
                 Text("$totalExpense", fontWeight = FontWeight.Bold, color = Color.Black)
             }
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Saldo", fontWeight = FontWeight.Bold, color = Color.Black)
-                Text("${viewModel.balance}", fontWeight = FontWeight.Bold, color = Color.Black)
-            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .background(MaterialTheme.colorScheme.tertiary, shape = MaterialTheme.shapes.medium)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Saldo estimado para fin de ${dashboardViewModel.selectedMonth} ", fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("$estimatedBalance", fontWeight = FontWeight.Bold, color = Color.Black)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .background(MaterialTheme.colorScheme.tertiary, shape = MaterialTheme.shapes.medium)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Saldo Actual ", fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("${viewModel.balance}", fontWeight = FontWeight.Bold, color = Color.Black)
         }
 
         Spacer(modifier = Modifier.height(32.dp))

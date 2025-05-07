@@ -51,6 +51,11 @@ class DashboardViewModel : ViewModel() {
     private val _categoriesState = MutableStateFlow<List<Category>>(emptyList())
     private val categoriesState: StateFlow<List<Category>> get() = _categoriesState
 
+    private val _estimatedBalance = MutableStateFlow(0.0)
+    val estimatedBalance: StateFlow<Double> get() = _estimatedBalance
+
+    private val _balanceReal = MutableStateFlow(0.0)
+
     init {
         updateSelectedMonth()
         if (userId != null) {
@@ -59,9 +64,16 @@ class DashboardViewModel : ViewModel() {
                 getAllTransactions(userId).collect { list ->
                     _allTransactions.value = list
                     refreshFilteredData(list)
+                    updateEstimatedBalanceWithRealBalance(_balanceReal.value)
                 }
             }
         }
+    }
+
+    fun updateEstimatedBalanceWithRealBalance(balanceReal: Double) {
+        _balanceReal.value = balanceReal
+        val estimated = balanceReal + (_totalIncome.value - _totalExpense.value)
+        _estimatedBalance.value = estimated
     }
 
     fun navigateToPreviousMonth() {
@@ -104,7 +116,7 @@ class DashboardViewModel : ViewModel() {
             .groupBy { it.category }
             .mapValues { entry ->
                 val totalAmount = entry.value.sumOf { it.amount }.toInt()
-                val categoryColor = categories[entry.key]?.color ?: "#000000" // Color predeterminado si no se encuentra
+                val categoryColor = categories[entry.key]?.color ?: "#61CBB3"
                 Pair(totalAmount, categoryColor)
             }
 
@@ -114,7 +126,7 @@ class DashboardViewModel : ViewModel() {
             .groupBy { it.category }
             .mapValues { entry ->
                 val totalAmount = entry.value.sumOf { it.amount }.toInt()
-                val categoryColor = categories[entry.key]?.color ?: "#000000" // Color predeterminado si no se encuentra
+                val categoryColor = categories[entry.key]?.color ?: "#61CBB3"
                 Pair(totalAmount, categoryColor)
             }
 

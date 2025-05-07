@@ -6,6 +6,7 @@ import com.example.misfinanzas.models.Subscription
 import com.example.misfinanzas.models.Transaction
 import com.example.misfinanzas.models.UserData
 import com.example.misfinanzas.room.BalanceEntity
+import com.example.misfinanzas.room.CategoryEntity
 import com.example.misfinanzas.room.SubscriptionEntity
 import com.example.misfinanzas.room.TransactionEntity
 import com.example.misfinanzas.utils.FirestoreUtils
@@ -125,6 +126,14 @@ class TransactionRepository {
                     last_updated = entity.last_updated
                 )
             }
+
+            is CategoryEntity -> { // <-- Nuevo caso: Categoría
+                Category(
+                    name = entity.name,
+                    color = entity.color,
+                    description = entity.description,
+                )
+            }
             else -> throw IllegalArgumentException("Entidad no existe")
         }
     }
@@ -162,6 +171,17 @@ class TransactionRepository {
                     start_date = startDate,
                     next_payment_date = nextPaymentDate,
                     created_at = createdAt,
+                    synced = true
+                )
+            }
+
+            is Category -> { // <-- Nuevo caso: Categoría
+                CategoryEntity(
+                    id = document.id,
+                    name = document.name,
+                    color = document.color,
+                    description = document.description,
+                    userId = userId,
                     synced = true
                 )
             }

@@ -18,4 +18,7 @@ object GlobalDatabase {
 
     val subscriptionDao: SubscriptionDao
         get() = appDatabase.subscriptionDao()
+
+    val categoryDao: CategoryDao
+        get() = appDatabase.categoryDao()
 }

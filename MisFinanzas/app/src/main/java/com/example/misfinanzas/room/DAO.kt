@@ -73,3 +73,22 @@ interface BalanceDao {
     fun getBalances(): Flow<List<BalanceEntity>>
 
 }
+
+@Dao
+interface CategoryDao {
+
+    // Insertar una categoría
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(category: CategoryEntity)
+
+    // Insertar varias categorías
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(categories: List<CategoryEntity>)
+
+    @Query("SELECT * FROM categories WHERE userId = :userId")
+    suspend fun getAllCategories(userId: String): List<CategoryEntity>
+
+    // Eliminar todas las categorías
+    @Query("DELETE FROM categories")
+    suspend fun deleteAll()
+}

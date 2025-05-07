@@ -1,11 +1,14 @@
 package com.example.misfinanzas.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.misfinanzas.auth.FirebaseAuthService
 import com.example.misfinanzas.models.Category
 import com.example.misfinanzas.models.SignUpModel
 import com.example.misfinanzas.models.UserDataSignUp
+import com.example.misfinanzas.repositories.RoomRepository
+import com.example.misfinanzas.room.CategoryEntity
 import com.example.misfinanzas.utils.FirestoreUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -119,10 +122,25 @@ class SignUpViewModel: ViewModel() {
             Category(name = "Educación", color = "#FFD700", description = "Libros, cursos, colegiaturas")
         )
 
+        val roomRepository = RoomRepository()
         // Subir cada categoría como documentos individuales en la subcolección Categories
         defaultCategories.forEach { category ->
             val categoryId = UUID.randomUUID().toString()
-            FirestoreUtils.uploadDocument("User/${userId}/Categories", categoryId, category)
+            val categoryEntity = CategoryEntity(
+                name = category.name,
+                color = category.color,
+                description = category.description,
+                userId = userId,
+                id = categoryId
+            )
+            roomRepository.insertCategory(categoryEntity)
+            if(FirestoreUtils.uploadDocument("User/${userId}/Categories", categoryId, category)){
+                categoryEntity.id = categoryId
+                categoryEntity.synced = true
+                roomRepository.insertCategory(categoryEntity)
+            }
         }
+        val categoryEntities = roomRepository.getAllCategories(userId)
+        Log.d("categories",categoryEntities.toString())
     }
 }

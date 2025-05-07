@@ -101,6 +101,7 @@ class AddViewModel : ViewModel() {
     }
 
     private suspend fun saveTransaction(userId: String, amount: Double, date: Date) {
+        if(category == "") category = "Otros"
         val transaction = TransactionEntity(
             id = UUID.randomUUID().toString(),
             userId = userId,
