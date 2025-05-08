@@ -1,5 +1,6 @@
 package com.example.misfinanzas.viewModels
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -77,6 +78,7 @@ class SharedViewModel: ViewModel() {
 
     private fun syncBalance(userId: String) = viewModelScope.launch {
         val localBalance = roomRepository.getBalanceByUserId(userId)
+        Log.d("xd", localBalance.toString())
         val firebaseBalance = repository.fetchBalanceFromFirestore(userId)
 
         if(localBalance == null && firebaseBalance == null) return@launch
@@ -131,21 +133,23 @@ class SharedViewModel: ViewModel() {
 
             balance = newBalance
 
-            if (!hasEnteredBalance) {
-                hasEnteredBalance = true
-                if (!repository.updateUserField(userId, "has_entered_balance", true)) {
-                    _error.value = "Error al actualizar has_entered_balance"
-                    return@launch
-                }
-            }
-
             val bal = BalanceEntity(
                 userId = userId,
+                initial_balance = balance,
                 current_balance = balance,
                 last_updated = Date()
             )
 
-            roomRepository.insertBalance(bal)
+            if(!hasEnteredBalance) {
+                hasEnteredBalance = true
+                roomRepository.insertBalance(bal)
+                if (!repository.updateUserField(userId, "has_entered_balance", true)) {
+                    _error.value = "Error al actualizar has_entered_balance"
+                    return@launch
+                }
+            }else{
+                roomRepository.updateBalance(userId,balance)
+            }
             syncLocalBalanceToFirebase(userId, bal)
 
         } catch (e: Exception) {

@@ -224,6 +224,12 @@ fun TransactionCard(transaction: TransactionEntity) {
                 color = Color.DarkGray
             )
             Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Fecha: ${transaction.date}",
+                fontSize = 14.sp,
+                color = Color.DarkGray
+            )
+            Spacer(modifier = Modifier.height(4.dp))
         }
     }
 }

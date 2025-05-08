@@ -37,6 +37,7 @@ data class SubscriptionEntity(
 data class BalanceEntity(
     @PrimaryKey val userId: String = "",
     val current_balance: Double = 0.0,
+    val initial_balance: Double = 15000.0,
     val last_updated: Date = Date()
 )
 

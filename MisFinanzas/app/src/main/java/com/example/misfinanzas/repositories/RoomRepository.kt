@@ -72,4 +72,8 @@ class RoomRepository @Inject constructor() {
         return categoryDao.getAllCategories(userId)
     }
 
+    suspend fun updateBalance(userId: String, current_balance: Double){
+        balanceDao.updateBalance(userId, current_balance)
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.example.misfinanzas.viewModels
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +61,8 @@ class DashboardViewModel : ViewModel() {
         updateSelectedMonth()
         if (userId != null) {
             viewModelScope.launch {
+                roomRepository.getBalanceByUserId(userId)
+                    ?.let { updateEstimatedBalanceWithRealBalance(it.initial_balance) }
                 fetchCategories(userId)
                 getAllTransactions(userId).collect { list ->
                     _allTransactions.value = list
@@ -70,8 +73,9 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
-    fun updateEstimatedBalanceWithRealBalance(balanceReal: Double) {
+    private fun updateEstimatedBalanceWithRealBalance(balanceReal: Double) {
         _balanceReal.value = balanceReal
+        Log.d("Balance", balanceReal.toString())
         val estimated = balanceReal + (_totalIncome.value - _totalExpense.value)
         _estimatedBalance.value = estimated
     }
