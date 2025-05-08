@@ -106,9 +106,13 @@ class DashboardViewModel : ViewModel() {
     private fun refreshFilteredData(transactions: List<TransactionEntity>) {
         val currentMonthFilter = selectedMonth
 
-        // Filtrar transacciones del mes seleccionado
+        // Obtener el índice del mes seleccionado
+        val currentMonthIndex = months.indexOf(currentMonthFilter)
+
+        // Filtrar transacciones desde el primer mes hasta el mes seleccionado (inclusive)
         val filtered = transactions.filter { transaction ->
-            transaction.date?.getMonthName() == currentMonthFilter
+            val transactionMonthIndex = transaction.date?.getMonthName()?.let { months.indexOf(it) } ?: -1
+            transactionMonthIndex in 0..currentMonthIndex
         }
 
         // Obtener las categorías actuales
@@ -134,12 +138,10 @@ class DashboardViewModel : ViewModel() {
                 Pair(totalAmount, categoryColor)
             }
 
-        // Actualizar estados
         _monthTransactions.value = filtered
         _expensesByCategory.value = expenseByCategory
         _incomesByCategory.value = incomeByCategory
 
-        // Actualizar totales de Ingresos y Gastos
         _totalIncome.value = incomeByCategory.values.sumOf { it.first }
         _totalExpense.value = expenseByCategory.values.sumOf { it.first }
     }
