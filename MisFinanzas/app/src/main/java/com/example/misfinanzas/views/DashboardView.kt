@@ -19,7 +19,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,11 +49,6 @@ fun DashboardView(viewModel: SharedViewModel, navController: NavController,
     val totalIncome by dashboardViewModel.totalIncome.collectAsState()
     val totalExpense by dashboardViewModel.totalExpense.collectAsState()
     val estimatedBalance  by dashboardViewModel.estimatedBalance.collectAsState()
-
-    LaunchedEffect(Unit) {
-        val balanceReal = viewModel.balance
-        dashboardViewModel.updateEstimatedBalanceWithRealBalance(balanceReal)
-    }
 
     Column(
         modifier = Modifier
