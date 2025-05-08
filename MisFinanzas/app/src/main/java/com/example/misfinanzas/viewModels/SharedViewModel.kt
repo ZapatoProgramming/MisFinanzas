@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.misfinanzas.models.Balance
 import com.example.misfinanzas.models.Category
 import com.example.misfinanzas.models.UserData
 import com.example.misfinanzas.repositories.RoomRepository
@@ -51,7 +50,7 @@ class SharedViewModel: ViewModel() {
 
     fun checkData() = viewModelScope.launch {
         val userId = getCurrentUserId().toString()
-        syncBalance(userId)
+        fetchBalance(userId)
         fetchTransactions(userId)
         fetchSubscriptions(userId)
         fetchCategories(userId)
@@ -61,7 +60,7 @@ class SharedViewModel: ViewModel() {
     }
 
     private fun fetchTransactions(userId: String) = viewModelScope.launch{
-       val transactionDocs = repository.fetchTransactions(userId)
+        val transactionDocs = repository.fetchTransactions(userId)
         val transactionEntities: List<TransactionEntity> = transactionDocs?.map { doc ->
             repository.documentToEntity(doc,userId) as TransactionEntity
         } ?: emptyList()
@@ -76,32 +75,9 @@ class SharedViewModel: ViewModel() {
         roomRepository.insertAllSubscriptions(subscriptionEntities)
     }
 
-    private fun syncBalance(userId: String) = viewModelScope.launch {
-        val localBalance = roomRepository.getBalanceByUserId(userId)
-        Log.d("xd", localBalance.toString())
-        val firebaseBalance = repository.fetchBalanceFromFirestore(userId)
-
-        if(localBalance == null && firebaseBalance == null) return@launch
-        if(localBalance == null && firebaseBalance != null){
-            updateBalance(firebaseBalance.current_balance)
-        }
-        if(localBalance != null && firebaseBalance == null){
-            balance = localBalance.current_balance
-            syncLocalBalanceToFirebase(userId, localBalance)
-        }
-        if(localBalance != null && firebaseBalance != null){
-            if(localBalance.last_updated.after(firebaseBalance.last_updated)){
-                balance = localBalance.current_balance
-                syncLocalBalanceToFirebase(userId,localBalance)
-            }else{
-                updateBalance(firebaseBalance.current_balance)
-            }
-        }
-    }
-
-    private suspend fun syncLocalBalanceToFirebase(userId: String, balanceEntity: BalanceEntity) {
-        val balance = repository.entityToDocument(balanceEntity) as Balance
-        repository.updateBalance(userId,balance)
+    private fun fetchBalance(userId: String) = viewModelScope.launch{
+        val balanceEntity = roomRepository.getBalanceByUserId(userId)
+        balance = balanceEntity?.current_balance ?: 0.0
     }
 
     private fun syncLocalTransactionsToFirebase(userId: String) = viewModelScope.launch{
@@ -150,7 +126,6 @@ class SharedViewModel: ViewModel() {
             }else{
                 roomRepository.updateBalance(userId,balance)
             }
-            syncLocalBalanceToFirebase(userId, bal)
 
         } catch (e: Exception) {
             _error.value = "Error inesperado: ${e.message}"
@@ -203,11 +178,24 @@ class SharedViewModel: ViewModel() {
     private fun fetchCategories(userId: String) = viewModelScope.launch {
         val categoryDocuments = repository.fetchCategories(userId)
 
+        Log.d("xd","1" + categoryDocuments.toString())
+        if (categoryDocuments != null) {
+            categoriesState.value = categoryDocuments
+        }
+        val categoryNames = categoryDocuments?.map { it.name }
+        if (categoryNames != null) {
+            categoriesNamesState.value = categoryNames
+        }
+
         val categoryEntities: List<CategoryEntity> = categoryDocuments?.mapNotNull { doc ->
             repository.documentToEntity(doc, userId) as? CategoryEntity
         } ?: emptyList()
 
-        roomRepository.insertAllCategories(categoryEntities)
+        categoryEntities.forEach{ entity ->
+            roomRepository.insertCategory(entity)
+        }
+
+        //roomRepository.insertAllCategories(categoryEntities)
     }
 
     private fun syncLocalCategoriesToFirebase(userId: String) = viewModelScope.launch {
@@ -220,10 +208,6 @@ class SharedViewModel: ViewModel() {
                 description = entity.description
             )
         }
-
-        categoriesState.value = categoryDocuments
-        val categoryNames = categoryDocuments.map { it.name }
-        categoriesNamesState.value = categoryNames
 
         categoryDocuments.forEach { document ->
             FirestoreUtils.uploadDocument(

@@ -1,5 +1,6 @@
 package com.example.misfinanzas.views
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -67,6 +68,17 @@ fun AddView(
         "Ingreso" -> MaterialTheme.colorScheme.primary
         "Gasto" -> Color.Red
         else -> Color.Gray
+    }
+
+    LaunchedEffect(Unit) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId != null) {
+            Log.d("xd","usuario: "+ userId)
+            viewModel.checkData()
+        }
+        if(!viewModel.hasEnteredBalance){
+            navController.navigate(HomeScreens.EnterBalance.route)
+        }
     }
 
     Column(
@@ -147,7 +159,14 @@ fun AddView(
                     .padding(vertical = 16.dp)
             ) {
                 Button(
-                    onClick = { categoriesExpanded = true },
+                    onClick = {
+                        val userId = FirebaseAuth.getInstance().currentUser?.uid
+                        if (userId != null) {
+                            Log.d("xd","usuario: "+ userId)
+                            viewModel.checkData()
+                        }
+
+                        categoriesExpanded = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(selectedCategory.ifEmpty { "Seleccionar Categoría" }, color = Color.White)

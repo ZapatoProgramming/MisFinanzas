@@ -27,24 +27,33 @@ class DashboardViewModel : ViewModel() {
 
     private val repository = TransactionRepository()
 
+
     // Estados para manejar datos
     private val _allTransactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
     private val _monthTransactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
 
     private val _totalIncome = MutableStateFlow(0)
-    val totalIncome: StateFlow<Int> get() = _totalIncome
 
     private val _totalExpense = MutableStateFlow(0)
-    val totalExpense: StateFlow<Int> get() = _totalExpense
 
     // Exponer estados inmutables
     val monthTransactions: StateFlow<List<TransactionEntity>> get() = _monthTransactions
 
     private val _expensesByCategory = MutableStateFlow<Map<String, Pair<Int, String>>>(emptyMap())
-    val expensesByCategory: StateFlow<Map<String, Pair<Int, String>>> get() = _expensesByCategory
 
     private val _incomesByCategory = MutableStateFlow<Map<String, Pair<Int, String>>>(emptyMap())
-    val incomesByCategory: StateFlow<Map<String, Pair<Int, String>>> get() = _incomesByCategory
+
+    private val _incomesByCategoryThisMonth = MutableStateFlow<Map<String, Pair<Int, String>>>(emptyMap())
+    val incomesByCategoryThisMonth: StateFlow<Map<String, Pair<Int, String>>> get() = _incomesByCategoryThisMonth
+
+    private val _expensesByCategoryThisMonth = MutableStateFlow<Map<String, Pair<Int, String>>>(emptyMap())
+    val expensesByCategoryThisMonth: StateFlow<Map<String, Pair<Int, String>>> get() = _expensesByCategoryThisMonth
+
+    private val _expensesThisMonth = MutableStateFlow<List<TransactionEntity>>(emptyList())
+    val expensesThisMonth: StateFlow<List<TransactionEntity>> get() = _expensesThisMonth
+
+    private val _incomesThisMonth = MutableStateFlow<List<TransactionEntity>>(emptyList())
+    val incomesThisMonth: StateFlow<List<TransactionEntity>> get() = _incomesThisMonth
 
     private val roomRepository = RoomRepository()
     private val userId: String? = FirebaseAuth.getInstance().currentUser?.uid
@@ -59,17 +68,23 @@ class DashboardViewModel : ViewModel() {
 
     init {
         updateSelectedMonth()
-        if (userId != null) {
             viewModelScope.launch {
-                roomRepository.getBalanceByUserId(userId)
-                    ?.let { updateEstimatedBalanceWithRealBalance(it.initial_balance) }
-                fetchCategories(userId)
-                getAllTransactions(userId).collect { list ->
-                    _allTransactions.value = list
-                    refreshFilteredData(list)
-                    updateEstimatedBalanceWithRealBalance(_balanceReal.value)
-                }
+                refresh()
             }
+    }
+
+    suspend fun refresh(){
+        if (userId != null) {
+        roomRepository.getBalanceByUserId(userId)
+            ?.let { updateEstimatedBalanceWithRealBalance(it.initial_balance)
+               Log.d("Balance","initial balance "+it.initial_balance)
+                Log.d("Balance","current balance "+it.current_balance)}
+        fetchCategories(userId)
+        getAllTransactions(userId).collect { list ->
+            _allTransactions.value = list
+            refreshFilteredData(list)
+            updateEstimatedBalanceWithRealBalance(_balanceReal.value)
+        }
         }
     }
 
@@ -114,6 +129,14 @@ class DashboardViewModel : ViewModel() {
             val transactionMonthIndex = transaction.date?.getMonthName()?.let { months.indexOf(it) } ?: -1
             transactionMonthIndex in 0..currentMonthIndex
         }
+        // Calcular transacciones solo del mes actual (no acumuladas)
+        val filteredOnlyThisMonth = transactions.filter { transaction ->
+            val transactionMonth = transaction.date?.getMonthName()
+            transactionMonth == selectedMonth
+        }
+
+        _expensesThisMonth.value = filteredOnlyThisMonth.filter { it.type == "Gasto" }
+        _incomesThisMonth.value = filteredOnlyThisMonth.filter { it.type == "Ingreso" }
 
         // Obtener las categorías actuales
         val categories = categoriesState.value.associateBy { it.name }
@@ -138,7 +161,27 @@ class DashboardViewModel : ViewModel() {
                 Pair(totalAmount, categoryColor)
             }
 
-        _monthTransactions.value = filtered
+        // Ingresos solo del mes actual agrupados por categoría
+        _incomesByCategoryThisMonth.value = filteredOnlyThisMonth
+            .filter { it.type == "Ingreso" }
+            .groupBy { it.category }
+            .mapValues { entry ->
+                val totalAmount = entry.value.sumOf { it.amount }.toInt()
+                val categoryColor = categories[entry.key]?.color ?: "#61CBB3"
+                Pair(totalAmount, categoryColor)
+            }
+
+        // Gastos solo del mes actual agrupados por categoría
+        _expensesByCategoryThisMonth.value = filteredOnlyThisMonth
+            .filter { it.type == "Gasto" }
+            .groupBy { it.category }
+            .mapValues { entry ->
+                val totalAmount = entry.value.sumOf { it.amount }.toInt()
+                val categoryColor = categories[entry.key]?.color ?: "#61CBB3"
+                Pair(totalAmount, categoryColor)
+            }
+
+        _monthTransactions.value = filteredOnlyThisMonth
         _expensesByCategory.value = expenseByCategory
         _incomesByCategory.value = incomeByCategory
 

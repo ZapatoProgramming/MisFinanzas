@@ -19,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.misfinanzas.components.PieChart
 import com.example.misfinanzas.room.TransactionEntity
 import com.example.misfinanzas.viewModels.DashboardViewModel
@@ -44,11 +46,16 @@ fun DashboardView(viewModel: SharedViewModel, navController: NavController,
                   dashboardViewModel: DashboardViewModel = viewModel()) {
 
     val transactions by dashboardViewModel.monthTransactions.collectAsState()
-    val expenseCategories by dashboardViewModel.expensesByCategory.collectAsState()
-    val incomeCategories by dashboardViewModel.incomesByCategory.collectAsState()
-    val totalIncome by dashboardViewModel.totalIncome.collectAsState()
-    val totalExpense by dashboardViewModel.totalExpense.collectAsState()
+    val expenseCategories by dashboardViewModel.expensesByCategoryThisMonth.collectAsState()
+    val incomeCategories by dashboardViewModel.incomesByCategoryThisMonth.collectAsState()
+
     val estimatedBalance  by dashboardViewModel.estimatedBalance.collectAsState()
+    val expensesMonth by dashboardViewModel.expensesThisMonth.collectAsState()
+    val incomesMonth by dashboardViewModel.incomesThisMonth.collectAsState()
+
+    LaunchedEffect(Unit) {
+        dashboardViewModel.refresh()
+    }
 
     Column(
         modifier = Modifier
@@ -82,14 +89,14 @@ fun DashboardView(viewModel: SharedViewModel, navController: NavController,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("Ingresos", fontWeight = FontWeight.Bold, color = Color.Black)
-                Text("$totalIncome", fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("${incomesMonth.sumOf { it.amount.toInt() }}", fontWeight = FontWeight.Bold, color = Color.Black)
             }
             Column(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("Gastos", fontWeight = FontWeight.Bold, color = Color.Black)
-                Text("$totalExpense", fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("$${expensesMonth.sumOf { it.amount.toInt() }}", fontWeight = FontWeight.Bold, color = Color.Black)
             }
         }
 
@@ -242,59 +249,63 @@ fun EnterBalanceView(viewModel: SharedViewModel = viewModel(), navController: Na
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.Start
-            ) {
-                IconButton(onClick = {
-                    navController.popBackStack()
-                }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver atras",
-                        tint = MaterialTheme.colorScheme.tertiary
-                    )
-                }
-            }
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .padding(top = 16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
-            Text(
-                text = "Ingresa tu saldo actual",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TextField(
-                value = balance,
-                onValueChange = { balance = it },
-                label = { Text("Saldo", color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    viewModel.updateBalance(balance.toDoubleOrNull() ?: 0.0)
-                    navController.navigate(HomeScreens.AddFirst.route)
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+            IconButton(onClick = {
+                navController.navigate(HomeScreens.Dashboard.route) {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = true
+                    }
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Volver atras",
+                    tint = MaterialTheme.colorScheme.tertiary
                 )
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Text("Guardar")
+                Text(
+                    text = "Ingresa tu saldo actual",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = balance,
+                    onValueChange = { balance = it },
+                    label = { Text("Saldo", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        viewModel.updateBalance(balance.toDoubleOrNull() ?: 0.0)
+                        navController.navigate(HomeScreens.AddFirst.route)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    Text("Guardar")
+                }
             }
         }
     }

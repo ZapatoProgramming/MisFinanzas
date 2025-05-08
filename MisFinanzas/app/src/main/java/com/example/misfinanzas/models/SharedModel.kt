@@ -10,7 +10,9 @@ data class UserData(
 )
 
 data class Balance(
+    val id: String = "",
     val current_balance: Double = 0.0,
+    val initial_balance: Double = 0.0,
     val last_updated: Date = Date()
 )
 

@@ -123,6 +123,7 @@ class TransactionRepository {
             is BalanceEntity -> {
                 Balance(
                     current_balance = entity.current_balance,
+                    initial_balance = entity.initial_balance,
                     last_updated = entity.last_updated
                 )
             }

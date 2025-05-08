@@ -56,7 +56,7 @@ fun HomeNavGraph(
             EnterBalanceView(viewModel = sharedViewModel, navController = navController)
         }
         composable(HomeScreens.CreateCategory.route){
-            CreateCategoryView(navController = navController)
+            CreateCategoryView(navController = navController, sharedViewModel = sharedViewModel)
         }
     }
 }

@@ -54,45 +54,6 @@ import android.graphics.Color as AndroidColor
 import androidx.core.graphics.createBitmap
 
 @Composable
-fun ColorPickerDialog(
-    selectedColor: Color,
-    onColorSelected: (Color) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var currentColor by remember { mutableStateOf(selectedColor) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Seleccionar color") },
-        text = {
-            // Mostrar el ColorPicker dentro del diálogo
-            ColorPicker(
-                selectedColor = currentColor,
-                onColorSelected = { color ->
-                    currentColor = color
-                },
-                onDismiss = {}
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onColorSelected(currentColor)
-                    onDismiss()
-                }
-            ) {
-                Text("Aceptar")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
-            }
-        }
-    )
-}
-
-@Composable
 fun ColorPicker(
     selectedColor: Color,
     onColorSelected: (Color) -> Unit,
@@ -109,38 +70,59 @@ fun ColorPicker(
     val backgroundColor by remember(hsv.value) {
         mutableStateOf(Color.hsv(hsv.value.first, hsv.value.second, hsv.value.third))
     }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Seleccionar color") },
+        text = {
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // Panel de saturación y valor
-        SatValPanel(hue = hsv.value.first) { sat, value ->
-            hsv.value = Triple(hsv.value.first, sat, value)
-        }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Panel de saturación y valor
+                SatValPanel(hue = hsv.value.first) { sat, value ->
+                    hsv.value = Triple(hsv.value.first, sat, value)
+                }
 
-        Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-        // Barra de matiz (hue)
-        HueBar { hue ->
-            hsv.value = Triple(hue, hsv.value.second, hsv.value.third)
-        }
+                // Barra de matiz (hue)
+                HueBar { hue ->
+                    hsv.value = Triple(hue, hsv.value.second, hsv.value.third)
+                }
 
-        Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-        // Vista previa del color seleccionado
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .background(backgroundColor)
-                .clickable {
-                    onColorSelected(backgroundColor) // Notificar el color seleccionado
+                // Vista previa del color seleccionado
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .background(backgroundColor)
+                        .clickable {
+                            onColorSelected(backgroundColor) // Notificar el color seleccionado
+                            onDismiss()
+                        }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onColorSelected(backgroundColor)
                     onDismiss()
                 }
-        )
-    }
+            ) {
+                Text("Aceptar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
 
 @Composable

@@ -115,32 +115,27 @@ class SignUpViewModel: ViewModel() {
 
     private suspend fun createDefaultCategoriesForUser(userId: String) {
         val defaultCategories = listOf(
-            Category(name = "Comida", color = "#FF6347", description = "Gastos relacionados con alimentos"),
-            Category(name = "Transporte", color = "#4682B4", description = "Viajes, combustible o transporte público"),
-            Category(name = "Salud", color = "#32CD32", description = "Medicamentos, consultas médicas"),
-            Category(name = "Entretenimiento", color = "#8A2BE2", description = "Cine, videojuegos, etc."),
-            Category(name = "Educación", color = "#FFD700", description = "Libros, cursos, colegiaturas")
+            Category(id = UUID.randomUUID().toString(), name = "Comida", color = "#FF6347", description = "Gastos relacionados con alimentos"),
+            Category(id = UUID.randomUUID().toString(), name = "Transporte", color = "#4682B4", description = "Viajes, combustible o transporte público"),
+            Category(id = UUID.randomUUID().toString(), name = "Salud", color = "#32CD32", description = "Medicamentos, consultas médicas"),
+            Category(id = UUID.randomUUID().toString(), name = "Entretenimiento", color = "#8A2BE2", description = "Cine, videojuegos, etc."),
+            Category(id = UUID.randomUUID().toString(), name = "Educación", color = "#FFD700", description = "Libros, cursos, colegiaturas")
         )
 
         val roomRepository = RoomRepository()
         // Subir cada categoría como documentos individuales en la subcolección Categories
         defaultCategories.forEach { category ->
-            val categoryId = UUID.randomUUID().toString()
             val categoryEntity = CategoryEntity(
                 name = category.name,
                 color = category.color,
                 description = category.description,
                 userId = userId,
-                id = categoryId
+                id = category.id
             )
+            val categoryEntities = roomRepository.getAllCategories(userId)
+            Log.d("categories",categoryEntities.toString())
             roomRepository.insertCategory(categoryEntity)
-            if(FirestoreUtils.uploadDocument("User/${userId}/Categories", categoryId, category)){
-                categoryEntity.id = categoryId
-                categoryEntity.synced = true
-                roomRepository.insertCategory(categoryEntity)
-            }
         }
-        val categoryEntities = roomRepository.getAllCategories(userId)
-        Log.d("categories",categoryEntities.toString())
+
     }
 }
