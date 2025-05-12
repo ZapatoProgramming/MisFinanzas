@@ -1,7 +1,5 @@
 # Mis Finanzas
 
-![Mis Finanzas Logo](https://via.placeholder.com/150 ) <!-- Reemplaza con la URL de tu logo si tienes uno -->
-
 ### Overview
 "**Mis Finanzas**" is a mobile application designed to help users manage their personal finances effectively. The app focuses on financial literacy, budgeting, and responsible spending habits, making it an essential tool for young adults and anyone looking to take control of their financial health.
 
